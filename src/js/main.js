@@ -3,10 +3,6 @@ import { openMealDetails, hideDetails } from "./ui/details.js";
 import { renderFoodLog } from "./ui/foodLog.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const mealsSections = document.querySelectorAll(
-    "#search-filters-section, #meal-categories-section, #all-recipes-section"
-  );
-
   const scannerSection = document.getElementById("products-section");
   const foodLogSection = document.getElementById("foodlog-section");
 
@@ -17,9 +13,17 @@ document.addEventListener("DOMContentLoaded", () => {
     foodLogSection.style.display = "none";
   }
 
-  // Sidebar
+  /* =======================
+     GLOBAL NAVIGATION
+  ======================= */
+  window.goToFoodLog = () => {
+    hideAll();
+    foodLogSection.style.display = "block";
+    renderFoodLog();
+  };
+
   document.querySelectorAll(".nav-link").forEach(link => {
-    link.onclick = e => {
+    link.addEventListener("click", e => {
       e.preventDefault();
       hideAll();
 
@@ -27,21 +31,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (page === "meals") showMealsPage();
       if (page === "scanner") scannerSection.style.display = "block";
-      if (page === "foodlog") {
-        foodLogSection.style.display = "block";
-        renderFoodLog();
-      }
-    };
+      if (page === "foodlog") window.goToFoodLog();
+    });
   });
 
-  // Back button
+  /* =======================
+     BACK FROM DETAILS
+  ======================= */
   document.getElementById("back-to-meals-btn").onclick = () => {
     hideDetails();
     showMealsPage();
   };
 
-  // Default
   hideAll();
   showMealsPage();
+
   initMeals(openMealDetails);
 });
