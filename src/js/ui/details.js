@@ -26,12 +26,20 @@ export function hideDetails() {
 }
 
 /* =======================
-   FILL CONTENT
+   FILL DETAILS
 ======================= */
 function fillDetails(meal) {
+  /* ---------- HERO ---------- */
   document.querySelector("#meal-details img").src = meal.strMealThumb;
   document.querySelector("#meal-details h1").textContent = meal.strMeal;
 
+  document.querySelector("#meal-details .bg-emerald-500").textContent =
+    meal.strCategory || "Meal";
+
+  document.querySelector("#meal-details .bg-blue-500").textContent =
+    meal.strArea || "Global";
+
+  /* ---------- CALORIES (FAKE BUT CONSISTENT) ---------- */
   const calories = Math.floor(Math.random() * 200) + 350;
   base = {
     calories,
@@ -43,7 +51,108 @@ function fillDetails(meal) {
   document.getElementById("hero-calories").textContent =
     `${calories} cal/serving`;
 
+  /* ---------- INGREDIENTS ---------- */
+  renderIngredients(meal);
+
+  /* ---------- INSTRUCTIONS ---------- */
+  renderInstructions(meal.strInstructions);
+
+  /* ---------- VIDEO ---------- */
+  renderVideo(meal.strYoutube);
+
+  /* ---------- NUTRITION ---------- */
+  renderNutrition();
+
   document.getElementById("log-meal-btn").onclick = openModal;
+}
+
+/* =======================
+   INGREDIENTS
+======================= */
+function renderIngredients(meal) {
+  const container = document.querySelector(
+    "#meal-details .grid.grid-cols-1.md\\:grid-cols-2"
+  );
+  container.innerHTML = "";
+
+  for (let i = 1; i <= 20; i++) {
+    const ingredient = meal[`strIngredient${i}`];
+    const measure = meal[`strMeasure${i}`];
+
+    if (!ingredient || ingredient.trim() === "") continue;
+
+    container.innerHTML += `
+      <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors">
+        <input type="checkbox"
+          class="ingredient-checkbox w-5 h-5 text-emerald-600 rounded border-gray-300"/>
+        <span class="text-gray-700">
+          <span class="font-medium text-gray-900">${measure}</span>
+          ${ingredient}
+        </span>
+      </div>
+    `;
+  }
+}
+
+/* =======================
+   INSTRUCTIONS
+======================= */
+function renderInstructions(text) {
+  const container = document.querySelector(
+    "#meal-details .space-y-4"
+  );
+  container.innerHTML = "";
+
+  const steps = text
+    .split(".")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  steps.forEach((step, index) => {
+    container.innerHTML += `
+      <div class="flex gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
+        <div class="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">
+          ${index + 1}
+        </div>
+        <p class="text-gray-700 leading-relaxed pt-2">${step}.</p>
+      </div>
+    `;
+  });
+}
+
+/* =======================
+   VIDEO
+======================= */
+function renderVideo(url) {
+  const iframe = document.querySelector("#meal-details iframe");
+
+  if (!url) {
+    iframe.parentElement.innerHTML = `
+      <div class="flex items-center justify-center h-full text-gray-400">
+        No video available
+      </div>
+    `;
+    return;
+  }
+
+  const videoId = url.split("v=")[1];
+  iframe.src = `https://www.youtube.com/embed/${videoId}`;
+}
+
+/* =======================
+   NUTRITION
+======================= */
+function renderNutrition() {
+  const box = document.querySelector("#nutrition-facts-container");
+
+  box.querySelector(".text-4xl").textContent = base.calories;
+  box.querySelector(".text-xs").textContent =
+    `Total: ${base.calories * 4} cal`;
+
+  const values = box.querySelectorAll(".font-bold.text-gray-900");
+  values[0].textContent = `${base.protein}g`;
+  values[1].textContent = `${base.carbs}g`;
+  values[2].textContent = `${base.fat}g`;
 }
 
 /* =======================
@@ -78,11 +187,11 @@ function updateModal() {
   document.getElementById("modal-calories").textContent =
     base.calories * servings;
   document.getElementById("modal-protein").textContent =
-    base.protein * servings;
+    base.protein * servings + "g";
   document.getElementById("modal-carbs").textContent =
-    base.carbs * servings;
+    base.carbs * servings + "g";
   document.getElementById("modal-fat").textContent =
-    base.fat * servings;
+    base.fat * servings + "g";
 }
 
 /* =======================
@@ -113,7 +222,7 @@ function save() {
     timer: 1200,
     showConfirmButton: false,
   }).then(() => {
-    window.goToFoodLog(); 
+    window.goToFoodLog();
   });
 }
 
