@@ -76,7 +76,8 @@ window.deleteFoodLogItem = function (index) {
 /* =======================
    CLEAR ALL (FULL RESET)
 ======================= */
-function initClearAll() {
+export function initClearAll() {
+ 
   const btn = document.getElementById("clear-foodlog");
   if (!btn) return;
 
@@ -87,14 +88,21 @@ function initClearAll() {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, clear all",
+      cancelButtonText: "Cancel",
     }).then((res) => {
       if (res.isConfirmed) {
-        localStorage.clear();
-        renderFoodLog();
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith("foodlog_")) {
+            localStorage.removeItem(key);
+          }
+        });
+
+        renderFoodLog(); 
       }
     });
   };
 }
+
 
 /* =======================
    RENDER FOOD LOG

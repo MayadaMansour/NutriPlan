@@ -1,3 +1,6 @@
 .loading {
   display:none
 }
+.bg-success {
+  background-color: #16a34a;
+}

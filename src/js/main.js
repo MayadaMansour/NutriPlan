@@ -1,16 +1,15 @@
 import { initMeals, showMealsPage, hideMealsPage } from "./ui/meals.js";
 import { openMealDetails, hideDetails } from "./ui/details.js";
-import { renderFoodLog } from "./ui/foodLog.js";
-
-import {
-  loadAreasFilters,
-  loadCategoriesGrid,
-} from "./ui/filter.js";
+import { renderFoodLog, initClearAll } from "./ui/foodLog.js";
+import { loadAreasFilters, loadCategoriesGrid } from "./ui/filter.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const scannerSection = document.getElementById("products-section");
   const foodLogSection = document.getElementById("foodlog-section");
 
+  /* =======================
+     HIDE ALL SECTIONS
+  ======================= */
   function hideAll() {
     hideMealsPage();
     hideDetails();
@@ -18,32 +17,56 @@ document.addEventListener("DOMContentLoaded", () => {
     foodLogSection.style.display = "none";
   }
 
-  /* ========= NAVIGATION ========= */
+  /* =======================
+     FOOD LOG NAVIGATION
+  ======================= */
   window.goToFoodLog = () => {
     hideAll();
     foodLogSection.style.display = "block";
+
+    // 👇 مهم جدًا
     renderFoodLog();
+    initClearAll();
   };
 
+  /* =======================
+     SIDEBAR NAVIGATION
+  ======================= */
   document.querySelectorAll(".nav-link").forEach((link) => {
-    link.onclick = (e) => {
+    link.addEventListener("click", (e) => {
       e.preventDefault();
       hideAll();
 
       const page = link.dataset.page;
-      if (page === "meals") showMealsPage();
-      if (page === "scanner") scannerSection.style.display = "block";
-      if (page === "foodlog") window.goToFoodLog();
-    };
+
+      if (page === "meals") {
+        showMealsPage();
+      }
+
+      if (page === "scanner") {
+        scannerSection.style.display = "block";
+      }
+
+      if (page === "foodlog") {
+        window.goToFoodLog();
+      }
+    });
   });
 
-  /* ========= BACK FROM DETAILS ========= */
-  document.getElementById("back-to-meals-btn").onclick = () => {
-    hideDetails();
-    showMealsPage();
-  };
+  /* =======================
+     BACK FROM DETAILS
+  ======================= */
+  const backBtn = document.getElementById("back-to-meals-btn");
+  if (backBtn) {
+    backBtn.onclick = () => {
+      hideDetails();
+      showMealsPage();
+    };
+  }
 
-  /* ========= INIT ========= */
+  /* =======================
+     INITIAL LOAD
+  ======================= */
   hideAll();
   showMealsPage();
 

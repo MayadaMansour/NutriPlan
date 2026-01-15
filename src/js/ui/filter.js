@@ -5,47 +5,68 @@ const API = "https://www.themealdb.com/api/json/v1/1";
 let selectedArea = "";
 let selectedCategory = "";
 
-/* ========= AREAS ========= */
+/* ========= CATEGORY COLORS ========= */
+const CATEGORY_COLORS = {
+  Beef: "bg-red-50 border-red-200",
+  Chicken: "bg-yellow-50 border-yellow-200",
+  Dessert: "bg-pink-50 border-pink-200",
+  Lamb: "bg-orange-50 border-orange-200",
+  Miscellaneous: "bg-slate-50 border-slate-200",
+  Pasta: "bg-amber-50 border-amber-200",
+  Pork: "bg-rose-50 border-rose-200",
+  Seafood: "bg-sky-50 border-sky-200",
+  Side: "bg-emerald-50 border-emerald-200",
+  Starter: "bg-cyan-50 border-cyan-200",
+  Vegan: "bg-green-50 border-green-200",
+  Vegetarian: "bg-lime-50 border-lime-200",
+};
+
+/* ================= AREAS ================= */
 export async function loadAreasFilters() {
   const res = await fetch(`${API}/list.php?a=list`);
   const data = await res.json();
 
   const container = document.getElementById("areas-filters");
-  const allBtn = container.querySelector("[data-area='']");
+  container.innerHTML = "";
 
-  allBtn.onclick = () => {
-    selectedArea = "";
-    setActiveArea(allBtn);
+  const allBtn = createAreaButton("All Cuisines", "");
+  setActiveArea(allBtn);
+  container.appendChild(allBtn);
+
+  data.meals.forEach((a) => {
+    container.appendChild(createAreaButton(a.strArea, a.strArea));
+  });
+}
+
+function createAreaButton(label, value) {
+  const btn = document.createElement("button");
+
+  btn.className =
+    "area-btn px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium whitespace-nowrap transition hover:bg-gray-200";
+
+  btn.textContent = label;
+
+  btn.onclick = () => {
+    selectedArea = value;
+    setActiveArea(btn);
     applyFilters();
   };
 
-  data.meals.forEach((a) => {
-    const btn = document.createElement("button");
-    btn.className =
-      "area-btn px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm";
-    btn.dataset.area = a.strArea;
-    btn.textContent = a.strArea;
-
-    btn.onclick = () => {
-      selectedArea = a.strArea;
-      setActiveArea(btn);
-      applyFilters();
-    };
-
-    container.appendChild(btn);
-  });
+  return btn;
 }
 
 function setActiveArea(active) {
-  document.querySelectorAll(".area-btn").forEach((b) => {
-    b.classList.remove("bg-emerald-600", "text-white");
-    b.classList.add("bg-gray-100", "text-gray-700");
+  document.querySelectorAll(".area-btn").forEach((btn) => {
+    btn.classList.remove("bg-emerald-600", "text-white");
+    btn.classList.add("bg-gray-100", "text-gray-700");
   });
 
+  active.classList.remove("bg-gray-100", "text-gray-700");
   active.classList.add("bg-emerald-600", "text-white");
 }
 
-/* ========= CATEGORIES ========= */
+
+/* ================= CATEGORIES ================= */
 export async function loadCategoriesGrid() {
   const res = await fetch(`${API}/categories.php`);
   const data = await res.json();
@@ -53,21 +74,42 @@ export async function loadCategoriesGrid() {
   const grid = document.getElementById("categories-grid");
   grid.innerHTML = "";
 
-  data.categories.forEach((c) => {
-    const card = document.createElement("div");
-    card.className =
-      "category-card bg-gray-50 rounded-xl p-3 border cursor-pointer";
-    card.dataset.category = c.strCategory;
+  data.categories.slice(0, 12).forEach((c) => {
+    const colors =
+      CATEGORY_COLORS[c.strCategory] || "bg-gray-50 border-gray-200";
 
+    const card = document.createElement("div");
+
+    card.className = `
+      category-card
+      ${colors}
+      border
+      rounded-2xl
+      h-[78px]
+      px-5
+      flex
+      items-center
+      cursor-pointer
+      transition
+      hover:shadow-md
+      text-center
+      py-2
+    `;
+
+    card.dataset.category = c.strCategory;
     card.innerHTML = `
-      <div class="flex items-center gap-3">
-        <img src="${c.strCategoryThumb}" class="w-10 h-10 rounded-lg" />
-        <h3 class="font-bold text-sm">${c.strCategory}</h3>
-      </div>
+      <span class="font-semibold text-sm text-gray-900">
+        ${c.strCategory}
+      </span>
     `;
 
     card.onclick = () => {
       selectedCategory = c.strCategory;
+      selectedArea = "";
+
+      const allAreaBtn = document.querySelector(".area-btn");
+      if (allAreaBtn) setActiveArea(allAreaBtn);
+
       setActiveCategory(card);
       applyFilters();
     };
@@ -77,13 +119,14 @@ export async function loadCategoriesGrid() {
 }
 
 function setActiveCategory(active) {
-  document.querySelectorAll(".category-card").forEach((c) =>
-    c.classList.remove("border-emerald-500", "bg-emerald-50")
-  );
-  active.classList.add("border-emerald-500", "bg-emerald-50");
+  document.querySelectorAll(".category-card").forEach((c) => {
+    c.classList.remove("ring-2", "ring-emerald-500");
+  });
+
+  active.classList.add("ring-2", "ring-emerald-500");
 }
 
-/* ========= APPLY FILTER ========= */
+/* ================= APPLY FILTER ================= */
 async function applyFilters() {
   if (!selectedArea && !selectedCategory) {
     fetchAllMeals();

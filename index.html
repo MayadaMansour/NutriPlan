@@ -166,39 +166,42 @@
         </div>
       </header>
 
-      <section
-        id="search-filters-section"
-        class="px-8 py-6 bg-white border-b border-gray-200"
-      >
-        <div class="mx-auto">
-          <div class="mb-6">
-            <div class="relative w-full">
-              <i
-                class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              ></i>
-              <input
-                id="search-input"
-                type="text"
-                placeholder="Search recipes by name, ingredient, or cuisine..."
-                class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm"
-              />
-            </div>
-          </div>
+<section
+  id="search-filters-section"
+  class="px-8 py-6 bg-white border-b border-gray-200"
+>
+  <div class="mx-auto">
+    <!-- Search -->
+    <div class="mb-6">
+      <div class="relative w-full">
+        <i
+          class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+        ></i>
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Search recipes by name, ingredient, or cuisine..."
+          class="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm"
+        />
+      </div>
+    </div>
 
-          <div class="flex items-center gap-3 overflow-x-auto pb-2">
-            <button
-              class="px-4 py-2 bg-emerald-600 text-white rounded-full font-medium text-sm whitespace-nowrap hover:bg-emerald-700 transition-all"
-            >
-              All Recipes
-            </button>
-            <button
-              class="px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-medium text-sm whitespace-nowrap hover:bg-gray-200 transition-all"
-            >
-              Egyptain
-            </button>
-          </div>
-        </div>
-      </section>
+    <!-- Areas / Cuisines -->
+    <div
+      id="areas-filters"
+      class="flex items-center gap-3 overflow-x-auto pb-2"
+    >
+      <!-- All Recipes -->
+      <button
+        class="area-btn px-4 py-2 bg-emerald-600 text-white rounded-full font-medium text-sm whitespace-nowrap hover:bg-emerald-700 transition-all"
+        data-area=""
+      >
+        All Recipes
+      </button>
+    </div>
+  </div>
+</section>
+
 
       <section id="meal-categories-section" class="px-8 py-6 bg-white">
         <div>
