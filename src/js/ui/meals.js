@@ -55,7 +55,7 @@ export function initMeals(openDetails) {
 //! FETCH 
 export async function fetchMeals() {
   const res = await fetch(
-    `${API}/meals/search?q=&page=1&limit=25`
+    `${API}/meals/search?q=chicken&page=1&limit=25`
   );
   const data = await res.json();
   renderMeals(data.results || []);

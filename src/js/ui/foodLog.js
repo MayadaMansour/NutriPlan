@@ -235,7 +235,6 @@ function renderWeeklyOverview() {
   `;
 }
 
-/* =======================WEEKLY STATS======================= */
 function updateWeeklyStats() {
   const week = getWeeklyData();
   const totalCalories = week.reduce((s, d) => s + d.calories, 0);

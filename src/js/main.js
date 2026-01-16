@@ -5,35 +5,53 @@ import { loadAreasFilters, loadCategoriesGrid } from "./ui/filter.js";
 import { initProductScanner } from "./ui/products.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+
   const scannerSection = document.getElementById("products-section");
   const foodLogSection = document.getElementById("foodlog-section");
+
   function hideAll() {
     hideMealsPage();
     hideDetails();
-    scannerSection.style.display = "none";
-    foodLogSection.style.display = "none";
+
+    if (scannerSection) scannerSection.style.display = "none";
+    if (foodLogSection) foodLogSection.style.display = "none";
   }
   window.goToFoodLog = () => {
     hideAll();
     foodLogSection.style.display = "block";
+
     renderFoodLog();
     initClearAll();
   };
+
   function goToScanner() {
     hideAll();
     scannerSection.style.display = "block";
+
     initProductScanner();
   }
+
   document.querySelectorAll(".nav-link").forEach((link) => {
-    link.onclick = (e) => {
+    link.addEventListener("click", (e) => {
       e.preventDefault();
       hideAll();
 
       const page = link.dataset.page;
-      if (page === "meals") showMealsPage();
-      if (page === "scanner") goToScanner();
-      if (page === "foodlog") window.goToFoodLog();
-    };
+
+      switch (page) {
+        case "meals":
+          showMealsPage();
+          break;
+
+        case "scanner":
+          goToScanner();
+          break;
+
+        case "foodlog":
+          window.goToFoodLog();
+          break;
+      }
+    });
   });
   document
     .getElementById("back-to-meals-btn")
