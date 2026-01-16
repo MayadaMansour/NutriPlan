@@ -1,45 +1,40 @@
 import { addMealToFoodLog } from "./foodLog.js";
 
-const API = "https://www.themealdb.com/api/json/v1/1";
+const API = "https://nutriplan-api.vercel.app/api";
 
 let currentMeal;
 let base;
 let servings = 1;
 
-/* =======================
-   OPEN DETAILS
-======================= */
+/* ================= OPEN DETAILS ================= */
 export async function openMealDetails(id) {
   document.getElementById("meal-details").style.display = "block";
 
-  const res = await fetch(`${API}/lookup.php?i=${id}`);
-  currentMeal = (await res.json()).meals[0];
+  const res = await fetch(`${API}/meals/${id}`);
+  const data = await res.json();
+
+  // 🔥 السطر المهم
+  currentMeal = data.result;
 
   fillDetails(currentMeal);
 }
 
-/* =======================
-   HIDE DETAILS
-======================= */
+/* ================= HIDE DETAILS ================= */
 export function hideDetails() {
   document.getElementById("meal-details").style.display = "none";
 }
 
-/* =======================
-   FILL DETAILS
-======================= */
+/* ================= FILL DETAILS ================= */
 function fillDetails(meal) {
-  /* ---------- HERO ---------- */
-  document.querySelector("#meal-details img").src = meal.strMealThumb;
-  document.querySelector("#meal-details h1").textContent = meal.strMeal;
+  document.querySelector("#meal-details img").src = meal.thumbnail;
+  document.querySelector("#meal-details h1").textContent = meal.name;
 
   document.querySelector("#meal-details .bg-emerald-500").textContent =
-    meal.strCategory || "Meal";
+    meal.category || "Meal";
 
   document.querySelector("#meal-details .bg-blue-500").textContent =
-    meal.strArea || "Global";
+    meal.area || "Global";
 
-  /* ---------- CALORIES (FAKE BUT CONSISTENT) ---------- */
   const calories = Math.floor(Math.random() * 200) + 350;
   base = {
     calories,
@@ -48,81 +43,57 @@ function fillDetails(meal) {
     fat: Math.floor(calories / 20),
   };
 
-  document.getElementById("hero-calories").textContent =
-    `${calories} cal/serving`;
+  document.getElementById(
+    "hero-calories"
+  ).textContent = `${calories} cal/serving`;
 
-  /* ---------- INGREDIENTS ---------- */
-  renderIngredients(meal);
-
-  /* ---------- INSTRUCTIONS ---------- */
-  renderInstructions(meal.strInstructions);
-
-  /* ---------- VIDEO ---------- */
-  renderVideo(meal.strYoutube);
-
-  /* ---------- NUTRITION ---------- */
+  renderIngredients(meal.ingredients || []);
+  renderInstructions(meal.instructions || []);
+  renderVideo(meal.youtube);
   renderNutrition();
 
   document.getElementById("log-meal-btn").onclick = openModal;
 }
 
-/* =======================
-   INGREDIENTS
-======================= */
-function renderIngredients(meal) {
+/* ================= INGREDIENTS ================= */
+function renderIngredients(ingredients) {
   const container = document.querySelector(
     "#meal-details .grid.grid-cols-1.md\\:grid-cols-2"
   );
   container.innerHTML = "";
 
-  for (let i = 1; i <= 20; i++) {
-    const ingredient = meal[`strIngredient${i}`];
-    const measure = meal[`strMeasure${i}`];
-
-    if (!ingredient || ingredient.trim() === "") continue;
-
+  ingredients.forEach((item) => {
     container.innerHTML += `
-      <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-colors">
+      <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
         <input type="checkbox"
-          class="ingredient-checkbox w-5 h-5 text-emerald-600 rounded border-gray-300"/>
+          class="w-5 h-5 text-emerald-600 rounded"/>
         <span class="text-gray-700">
-          <span class="font-medium text-gray-900">${measure}</span>
-          ${ingredient}
+          <span class="font-medium">${item.measure}</span>
+          ${item.ingredient}
         </span>
-      </div>
-    `;
-  }
-}
-
-/* =======================
-   INSTRUCTIONS
-======================= */
-function renderInstructions(text) {
-  const container = document.querySelector(
-    "#meal-details .space-y-4"
-  );
-  container.innerHTML = "";
-
-  const steps = text
-    .split(".")
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  steps.forEach((step, index) => {
-    container.innerHTML += `
-      <div class="flex gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors">
-        <div class="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">
-          ${index + 1}
-        </div>
-        <p class="text-gray-700 leading-relaxed pt-2">${step}.</p>
       </div>
     `;
   });
 }
 
-/* =======================
-   VIDEO
-======================= */
+/* ================= INSTRUCTIONS ================= */
+function renderInstructions(steps) {
+  const container = document.querySelector("#meal-details .space-y-4");
+  container.innerHTML = "";
+
+  steps.forEach((step, i) => {
+    container.innerHTML += `
+      <div class="flex gap-4 p-4 rounded-xl">
+        <div class="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">
+          ${i + 1}
+        </div>
+        <p class="text-gray-700 pt-2">${step}</p>
+      </div>
+    `;
+  });
+}
+
+/* ================= VIDEO ================= */
 function renderVideo(url) {
   const iframe = document.querySelector("#meal-details iframe");
 
@@ -135,13 +106,11 @@ function renderVideo(url) {
     return;
   }
 
-  const videoId = url.split("v=")[1];
+  const videoId = url.includes("v=") ? url.split("v=")[1] : "";
   iframe.src = `https://www.youtube.com/embed/${videoId}`;
 }
 
-/* =======================
-   NUTRITION
-======================= */
+/* ================= NUTRITION ================= */
 function renderNutrition() {
   const box = document.querySelector("#nutrition-facts-container");
 
@@ -155,18 +124,14 @@ function renderNutrition() {
   values[2].textContent = `${base.fat}g`;
 }
 
-/* =======================
-   MODAL
-======================= */
+/* ================= MODAL ================= */
 function openModal() {
   const modal = document.getElementById("log-meal-modal");
   modal.classList.remove("hidden");
   modal.classList.add("flex");
 
-  document.getElementById("modal-meal-name").textContent =
-    currentMeal.strMeal;
-  document.getElementById("modal-meal-image").src =
-    currentMeal.strMealThumb;
+  document.getElementById("modal-meal-name").textContent = currentMeal.name;
+  document.getElementById("modal-meal-image").src = currentMeal.thumbnail;
 
   servings = 1;
   updateModal();
@@ -194,13 +159,11 @@ function updateModal() {
     base.fat * servings + "g";
 }
 
-/* =======================
-   SAVE
-======================= */
+/* ================= SAVE ================= */
 function save() {
   addMealToFoodLog({
-    name: currentMeal.strMeal,
-    image: currentMeal.strMealThumb,
+    name: currentMeal.name,
+    image: currentMeal.thumbnail,
     servings,
     calories: base.calories * servings,
     protein: base.protein * servings,
@@ -221,9 +184,7 @@ function save() {
     text: "Meal added to Food Log",
     timer: 1200,
     showConfirmButton: false,
-  }).then(() => {
-    window.goToFoodLog();
-  });
+  }).then(() => window.goToFoodLog());
 }
 
 function close() {

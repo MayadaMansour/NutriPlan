@@ -1,116 +1,80 @@
-import { renderMeals, fetchAllMeals } from "./meals.js";
+import { fetchMeals, fetchMealsByFilter } from "./meals.js";
 
-const API = "https://www.themealdb.com/api/json/v1/1";
+const API = "https://nutriplan-api.vercel.app/api";
 
 let selectedArea = "";
 let selectedCategory = "";
 
-/* ========= CATEGORY COLORS ========= */
-const CATEGORY_COLORS = {
-  Beef: "bg-red-50 border-red-200",
-  Chicken: "bg-yellow-50 border-yellow-200",
-  Dessert: "bg-pink-50 border-pink-200",
-  Lamb: "bg-orange-50 border-orange-200",
-  Miscellaneous: "bg-slate-50 border-slate-200",
-  Pasta: "bg-amber-50 border-amber-200",
-  Pork: "bg-rose-50 border-rose-200",
-  Seafood: "bg-sky-50 border-sky-200",
-  Side: "bg-emerald-50 border-emerald-200",
-  Starter: "bg-cyan-50 border-cyan-200",
-  Vegan: "bg-green-50 border-green-200",
-  Vegetarian: "bg-lime-50 border-lime-200",
-};
-
 /* ================= AREAS ================= */
 export async function loadAreasFilters() {
-  const res = await fetch(`${API}/list.php?a=list`);
+  const res = await fetch(`${API}/meals/areas`);
   const data = await res.json();
 
   const container = document.getElementById("areas-filters");
   container.innerHTML = "";
+  const allBtn = createAreaBtn("All Cuisines", () => {
+    selectedArea = "";
+    selectedCategory = "";
+    fetchMeals();
+    setActive(container, allBtn);
+  });
 
-  const allBtn = createAreaButton("All Cuisines", "");
-  setActiveArea(allBtn);
   container.appendChild(allBtn);
+  setActive(container, allBtn);
 
-  data.meals.forEach((a) => {
-    container.appendChild(createAreaButton(a.strArea, a.strArea));
+  data.results.forEach((item) => {
+    const areaName = item.name;
+
+    const btn = createAreaBtn(areaName, () => {
+      selectedArea = areaName;
+      setActive(container, btn);
+      applyFilters();
+    });
+
+    container.appendChild(btn);
   });
 }
-
-function createAreaButton(label, value) {
-  const btn = document.createElement("button");
-
-  btn.className =
-    "area-btn px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium whitespace-nowrap transition hover:bg-gray-200";
-
-  btn.textContent = label;
-
-  btn.onclick = () => {
-    selectedArea = value;
-    setActiveArea(btn);
-    applyFilters();
-  };
-
-  return btn;
-}
-
-function setActiveArea(active) {
-  document.querySelectorAll(".area-btn").forEach((btn) => {
-    btn.classList.remove("bg-emerald-600", "text-white");
-    btn.classList.add("bg-gray-100", "text-gray-700");
-  });
-
-  active.classList.remove("bg-gray-100", "text-gray-700");
-  active.classList.add("bg-emerald-600", "text-white");
-}
-
 
 /* ================= CATEGORIES ================= */
 export async function loadCategoriesGrid() {
-  const res = await fetch(`${API}/categories.php`);
+  const res = await fetch(`${API}/meals/categories`);
   const data = await res.json();
 
   const grid = document.getElementById("categories-grid");
   grid.innerHTML = "";
 
-  data.categories.slice(0, 12).forEach((c) => {
-    const colors =
-      CATEGORY_COLORS[c.strCategory] || "bg-gray-50 border-gray-200";
+  data.results.forEach((item) => {
+    const categoryName = item.name;
 
     const card = document.createElement("div");
-
     card.className = `
       category-card
-      ${colors}
       border
       rounded-2xl
-      h-[78px]
-      px-5
+      
       flex
       items-center
+      gap-2
       cursor-pointer
       transition
-      hover:shadow-md
-      text-center
-      py-2
+      hover:ring-2
+      ring-emerald-500
     `;
 
-    card.dataset.category = c.strCategory;
     card.innerHTML = `
-      <span class="font-semibold text-sm text-gray-900">
-        ${c.strCategory}
+      <img
+        src="${item.thumbnail}"
+        alt="${categoryName}"
+        class="w-10 h-10 object-contain px-2"
+      />
+      <span class="font-semibold text-gray-900">
+        ${categoryName}
       </span>
     `;
 
     card.onclick = () => {
-      selectedCategory = c.strCategory;
-      selectedArea = "";
-
-      const allAreaBtn = document.querySelector(".area-btn");
-      if (allAreaBtn) setActiveArea(allAreaBtn);
-
-      setActiveCategory(card);
+      selectedCategory = categoryName;
+      setActive(grid, card, "category-card");
       applyFilters();
     };
 
@@ -118,43 +82,35 @@ export async function loadCategoriesGrid() {
   });
 }
 
-function setActiveCategory(active) {
-  document.querySelectorAll(".category-card").forEach((c) => {
-    c.classList.remove("ring-2", "ring-emerald-500");
-  });
-
-  active.classList.add("ring-2", "ring-emerald-500");
-}
-
-/* ================= APPLY FILTER ================= */
-async function applyFilters() {
-  if (!selectedArea && !selectedCategory) {
-    fetchAllMeals();
-    return;
-  }
-
-  let meals = [];
+function applyFilters() {
+  let params = "";
 
   if (selectedCategory) {
-    const r = await fetch(`${API}/filter.php?c=${selectedCategory}`);
-    meals = (await r.json()).meals || [];
+    params += `category=${encodeURIComponent(selectedCategory)}`;
   }
 
   if (selectedArea) {
-    const r = await fetch(`${API}/filter.php?a=${selectedArea}`);
-    const byArea = (await r.json()).meals || [];
-    meals = meals.length
-      ? meals.filter((m) => byArea.some((a) => a.idMeal === m.idMeal))
-      : byArea;
+    params += `${params ? "&" : ""}area=${encodeURIComponent(selectedArea)}`;
   }
 
-  const fullMeals = await Promise.all(
-    meals.slice(0, 24).map((m) =>
-      fetch(`${API}/lookup.php?i=${m.idMeal}`)
-        .then((r) => r.json())
-        .then((d) => d.meals[0])
-    )
-  );
+  fetchMealsByFilter(params);
+}
 
-  renderMeals(fullMeals);
+function createAreaBtn(text, onClick) {
+  const btn = document.createElement("button");
+  btn.textContent = text;
+  btn.className =
+    "area-btn px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium hover:bg-emerald-600 hover:text-white transition";
+  btn.onclick = onClick;
+  return btn;
+}
+
+function setActive(container, activeEl, className = "area-btn") {
+  container.querySelectorAll(`.${className}`).forEach((el) => {
+    el.classList.remove("bg-emerald-600", "text-white", "ring-2");
+    el.classList.add("bg-gray-100", "text-gray-700");
+  });
+
+  activeEl.classList.remove("bg-gray-100", "text-gray-700");
+  activeEl.classList.add("bg-emerald-600", "text-white", "ring-2");
 }
