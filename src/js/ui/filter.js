@@ -5,7 +5,7 @@ const API = "https://nutriplan-api.vercel.app/api";
 let selectedArea = "";
 let selectedCategory = "";
 
-/* ================= CATEGORIES ================= */
+//! CATEGORIES 
 export async function loadCategoriesGrid() {
   const res = await fetch(`${API}/meals/categories`);
   const data = await res.json();
@@ -52,7 +52,7 @@ function createCategoryCard(name, img) {
   return card;
 }
 
-/* ================= AREAS ================= */
+//! AREAS 
 export async function loadAreasFilters() {
   const res = await fetch(`${API}/meals/areas`);
   const data = await res.json();
@@ -87,7 +87,7 @@ function createAreaBtn(text, onClick) {
   return btn;
 }
 
-/* ================= FILTER ================= */
+//! FILTER
 function applyFilters() {
   let params = [];
 

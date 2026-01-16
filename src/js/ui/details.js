@@ -20,7 +20,7 @@ export function hideDetails() {
   document.getElementById("meal-details").style.display = "none";
 }
 
-/* ================= DETAILS ================= */
+//! DETAILS
 function fillDetails(meal) {
   document.querySelector("#meal-details img").src = meal.thumbnail;
   document.querySelector("#meal-details h1").textContent = meal.name;
@@ -87,7 +87,7 @@ function renderInstructions(steps) {
   });
 }
 
-/* ================= VIDEO ================= */
+//! VIDEO 
 function renderVideo(url) {
   const iframe = document.querySelector("#meal-details iframe");
 
@@ -117,7 +117,7 @@ function renderNutrition() {
   values[2].textContent = `${base.fat}g`;
 }
 
-/* ================= PARAGRAPH ================= */
+//! PARAGRAPH 
 function openModal() {
   const modal = document.getElementById("log-meal-modal");
   modal.classList.remove("hidden");
@@ -152,7 +152,7 @@ function updateModal() {
     base.fat * servings + "g";
 }
 
-/* ================= SAVE FOOD LOG ================= */
+//! SAVE FOOD LOG 
 function save() {
   addMealToFoodLog({
     name: currentMeal.name,

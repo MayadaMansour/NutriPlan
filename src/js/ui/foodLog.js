@@ -1,13 +1,20 @@
-function todayKey() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `foodlog_${y}-${m}-${day}`;
-}
 
+//! GLOBAL NAVIGATION 
+window.goToMeals = function () {
+  if (typeof hideDetails === "function") hideDetails();
+  if (typeof showMealsPage === "function") showMealsPage();
+};
+window.goToScanner = function () {
+  if (typeof hideMealsPage === "function") hideMealsPage();
+  if (typeof hideDetails === "function") hideDetails();
 
+  const scannerSection = document.getElementById("products-section");
+  if (scannerSection) scannerSection.style.display = "block";
 
+  if (typeof initProductScanner === "function") {
+    initProductScanner();
+  }
+};
 document.addEventListener("click", (e) => {
   if (e.target.closest("#go-to-meals")) {
     window.goToMeals();
@@ -18,6 +25,14 @@ document.addEventListener("click", (e) => {
   }
 });
 
+
+function todayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `foodlog_${y}-${m}-${day}`;
+}
 function getEmptyDay() {
   return {
     items: [],
@@ -25,7 +40,7 @@ function getEmptyDay() {
   };
 }
 
-/* =======================TODAY DATE======================= */
+//! TODAY DATE
 function renderTodayDate() {
   const el = document.getElementById("foodlog-date");
   if (!el) return;
@@ -38,7 +53,7 @@ function renderTodayDate() {
   });
 }
 
-/* =======================ADD MEAL======================= */
+//! ADD MEAL
 export function addMealToFoodLog(meal) {
   const key = todayKey();
   const data = JSON.parse(localStorage.getItem(key)) || getEmptyDay();
@@ -54,7 +69,7 @@ export function addMealToFoodLog(meal) {
   renderFoodLog();
 }
 
-/* ======================= DELETE ======================= */
+//! DELETE 
 window.deleteFoodLogItem = function (index) {
   const key = todayKey();
   const data = JSON.parse(localStorage.getItem(key));
@@ -75,7 +90,6 @@ window.deleteFoodLogItem = function (index) {
 
   renderFoodLog();
 };
-
 export function initClearAll() {
   const btn = document.getElementById("clear-foodlog");
   if (!btn) return;
@@ -101,9 +115,7 @@ export function initClearAll() {
   };
 }
 
-
-
-/* ====================== FOOD LOG======================= */
+//! FOOD LOG
 export function renderFoodLog() {
   const key = todayKey();
   const data = JSON.parse(localStorage.getItem(key));
@@ -230,7 +242,7 @@ function updateProgress(value, max, barClass, label) {
     });
 }
 
-/* =======================WEEKLY DATA======================= */
+//! WEEKLY DATA
 function getWeeklyData() {
   const today = new Date();
   const week = [];
@@ -256,7 +268,7 @@ function getWeeklyData() {
   return week;
 }
 
-/* =======================WEEKLY OVERVIEW======================= */
+//! WEEKLY OVERVIEW
 function renderWeeklyOverview() {
   const container = document.getElementById("weekly-chart");
   if (!container) return;
@@ -291,7 +303,6 @@ function renderWeeklyOverview() {
     </div>
   `;
 }
-
 function updateWeeklyStats() {
   const week = getWeeklyData();
   const totalCalories = week.reduce((s, d) => s + d.calories, 0);
@@ -303,26 +314,10 @@ function updateWeeklyStats() {
   if (avg) avg.textContent = `${Math.round(totalCalories / 7)} kcal`;
   if (items) items.textContent = `${totalItems} items`;
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   initClearAll();
   renderTodayDate();
   renderFoodLog();
 });
-// ===== GLOBAL NAVIGATION HELPERS =====
-window.goToMeals = function () {
-  if (typeof hideDetails === "function") hideDetails();
-  if (typeof showMealsPage === "function") showMealsPage();
-};
 
-window.goToScanner = function () {
-  if (typeof hideMealsPage === "function") hideMealsPage();
-  if (typeof hideDetails === "function") hideDetails();
 
-  const scannerSection = document.getElementById("products-section");
-  if (scannerSection) scannerSection.style.display = "block";
-
-  if (typeof initProductScanner === "function") {
-    initProductScanner();
-  }
-};

@@ -7,18 +7,28 @@ let activeNutri = "";
 let activeCategory = "";
 let selectedProduct = null;
 
-/* =====================
-   PRODUCT MODEL
-===================== */
+const modal = document.getElementById("log-meal-modal");
+const modalImg = document.getElementById("modal-meal-image");
+const modalName = document.getElementById("modal-meal-name");
+const modalCalories = document.getElementById("modal-calories");
+const modalProtein = document.getElementById("modal-protein");
+const modalCarbs = document.getElementById("modal-carbs");
+const modalFat = document.getElementById("modal-fat");
+const confirmBtn = document.getElementById("confirm-log");
+const cancelBtn = document.getElementById("cancel-log");
+
+const grid = () => document.getElementById("products-grid");
+const loading = () => document.getElementById("products-loading");
+const empty = () => document.getElementById("products-empty");
+const count = () => document.getElementById("products-count");
+
 class Product {
   constructor(item) {
     this.barcode = item.barcode;
     this.name = item.name;
     this.brand = item.brand || "";
     this.image = item.image || "https://via.placeholder.com/300";
-    this.nutri = item.nutritionGrade
-      ? item.nutritionGrade.toUpperCase()
-      : "";
+    this.nutri = item.nutritionGrade ? item.nutritionGrade.toUpperCase() : "";
     this.nova = item.novaGroup ?? "-";
     this.nutrients = {
       calories: item.nutrients?.calories ?? 0,
@@ -29,14 +39,6 @@ class Product {
     };
   }
 }
-
-/* =====================
-   UI HELPERS
-===================== */
-const grid = () => document.getElementById("products-grid");
-const loading = () => document.getElementById("products-loading");
-const empty = () => document.getElementById("products-empty");
-const count = () => document.getElementById("products-count");
 
 function showLoading() {
   loading()?.classList.remove("hidden");
@@ -56,9 +58,7 @@ function showGrid() {
   grid()?.classList.remove("hidden");
 }
 
-/* =====================
-   SEARCH BY NAME
-===================== */
+//! SEARCH BY NAME
 async function searchByName(query) {
   showLoading();
   try {
@@ -74,9 +74,7 @@ async function searchByName(query) {
   }
 }
 
-/* =====================
-   SEARCH BY BARCODE
-===================== */
+//! SEARCH BY BARCODE
 async function searchByBarcode(code) {
   showLoading();
   try {
@@ -90,40 +88,26 @@ async function searchByBarcode(code) {
   }
 }
 
-/* =====================
-   FILTERS
-===================== */
+//! FILTERS
 function applyFilters() {
   let filtered = [...allProducts];
-
   if (activeNutri) {
     filtered = filtered.filter((p) => p.nutri === activeNutri);
   }
-
   if (activeCategory) {
+    const cat = activeCategory.toLowerCase();
+
     filtered = filtered.filter(
       (p) =>
-        p.name.toLowerCase().includes(activeCategory.toLowerCase()) ||
-        p.brand.toLowerCase().includes(activeCategory.toLowerCase())
+        p.name.toLowerCase().includes(cat) ||
+        (p.brand && p.brand.toLowerCase().includes(cat))
     );
   }
 
   renderProducts(filtered);
 }
 
-/* =====================
-   MODAL
-===================== */
-const modal = document.getElementById("log-meal-modal");
-const modalImg = document.getElementById("modal-meal-image");
-const modalName = document.getElementById("modal-meal-name");
-const modalCalories = document.getElementById("modal-calories");
-const modalProtein = document.getElementById("modal-protein");
-const modalCarbs = document.getElementById("modal-carbs");
-const modalFat = document.getElementById("modal-fat");
-const confirmBtn = document.getElementById("confirm-log");
-const cancelBtn = document.getElementById("cancel-log");
-
+//! PARAGRAPH
 function openProductModal(product) {
   selectedProduct = product;
   modalImg.src = product.image;
@@ -135,18 +119,12 @@ function openProductModal(product) {
   modal.classList.remove("hidden");
   modal.classList.add("flex");
 }
-
 function closeProductModal() {
   modal.classList.add("hidden");
   modal.classList.remove("flex");
   selectedProduct = null;
 }
-
 cancelBtn.onclick = closeProductModal;
-
-/* =====================
-   LOG FOOD
-===================== */
 confirmBtn.onclick = () => {
   if (!selectedProduct) return;
 
@@ -168,9 +146,7 @@ confirmBtn.onclick = () => {
   closeProductModal();
 };
 
-/* =====================
-   RENDER PRODUCTS
-===================== */
+//! PRODUCTS
 function renderProducts(products) {
   grid().innerHTML = "";
   count().textContent = `Showing ${products.length} products`;
@@ -204,20 +180,24 @@ function renderProducts(products) {
         <h3 class="font-bold text-gray-900 mb-3 line-clamp-2">${p.name}</h3>
 
         <div class="grid grid-cols-4 gap-1 text-xs text-center">
-          <div class="bg-emerald-50 rounded p-1"><b>${p.nutrients.protein}g</b><div>Protein</div></div>
-          <div class="bg-blue-50 rounded p-1"><b>${p.nutrients.carbs}g</b><div>Carbs</div></div>
-          <div class="bg-purple-50 rounded p-1"><b>${p.nutrients.fat}g</b><div>Fat</div></div>
-          <div class="bg-orange-50 rounded p-1"><b>${p.nutrients.sugar}g</b><div>Sugar</div></div>
+          <div class="bg-emerald-50 rounded p-1"><b>${
+            p.nutrients.protein
+          }g</b><div>Protein</div></div>
+          <div class="bg-blue-50 rounded p-1"><b>${
+            p.nutrients.carbs
+          }g</b><div>Carbs</div></div>
+          <div class="bg-purple-50 rounded p-1"><b>${
+            p.nutrients.fat
+          }g</b><div>Fat</div></div>
+          <div class="bg-orange-50 rounded p-1"><b>${
+            p.nutrients.sugar
+          }g</b><div>Sugar</div></div>
         </div>
       </div>
     `;
     grid().appendChild(card);
   });
 }
-
-/* =====================
-   INIT
-===================== */
 export function initProductScanner() {
   document.getElementById("search-product-btn").onclick = () => {
     const v = document.getElementById("product-search-input").value.trim();
@@ -231,9 +211,7 @@ export function initProductScanner() {
 
   document.querySelectorAll(".nutri-score-filter").forEach((btn) => {
     btn.onclick = () => {
-      activeNutri = btn.dataset.grade
-        ? btn.dataset.grade.toUpperCase()
-        : "";
+      activeNutri = btn.dataset.grade ? btn.dataset.grade.toUpperCase() : "";
       applyFilters();
     };
   });
