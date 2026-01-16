@@ -27,6 +27,7 @@ export function initMeals(openDetails) {
   onOpenDetails = openDetails;
   fetchMeals();
 
+  // فتح التفاصيل
   grid.onclick = (e) => {
     const card = e.target.closest(".recipe-card");
     if (!card) return;
@@ -35,14 +36,19 @@ export function initMeals(openDetails) {
     onOpenDetails(card.dataset.mealId);
   };
 
+  // 🔍 SEARCH
   search.oninput = async (e) => {
     const q = e.target.value.trim();
+
     if (!q) {
       fetchMeals();
       return;
     }
 
-    const res = await fetch(`${API}/meals/search?query=${q}`);
+    const res = await fetch(
+      `${API}/meals/search?q=${encodeURIComponent(q)}&page=1&limit=25`
+    );
+
     const data = await res.json();
     renderMeals(data.results || []);
   };
