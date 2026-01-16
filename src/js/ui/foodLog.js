@@ -1,4 +1,3 @@
-
 function todayKey() {
   const d = new Date();
   const y = d.getFullYear();
@@ -6,6 +5,18 @@ function todayKey() {
   const day = String(d.getDate()).padStart(2, "0");
   return `foodlog_${y}-${m}-${day}`;
 }
+
+
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#go-to-meals")) {
+    window.goToMeals();
+  }
+
+  if (e.target.closest("#go-to-scanner")) {
+    window.goToScanner();
+  }
+});
 
 function getEmptyDay() {
   return {
@@ -66,31 +77,30 @@ window.deleteFoodLogItem = function (index) {
 };
 
 export function initClearAll() {
- 
   const btn = document.getElementById("clear-foodlog");
   if (!btn) return;
 
   btn.onclick = () => {
     Swal.fire({
-      title: "Clear all data?",
-      text: "This will delete ALL saved food log data",
+      title: "Clear today's food log?",
+      text: "This will remove all meals logged today",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, clear all",
+      confirmButtonText: "Yes, clear",
       cancelButtonText: "Cancel",
     }).then((res) => {
-      if (res.isConfirmed) {
-        Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith("foodlog_")) {
-            localStorage.removeItem(key);
-          }
-        });
+      if (!res.isConfirmed) return;
+      localStorage.removeItem(todayKey());
+      updateProgress(0, 2000, ".bg-emerald-500", "Calories");
+      updateProgress(0, 50, ".bg-blue-500", "Protein");
+      updateProgress(0, 250, ".bg-amber-500", "Carbs");
+      updateProgress(0, 65, ".bg-purple-500", "Fat");
 
-        renderFoodLog(); 
-      }
+      renderFoodLog();
     });
   };
 }
+
 
 
 /* ====================== FOOD LOG======================= */
@@ -109,14 +119,6 @@ export function renderFoodLog() {
     title.textContent = "Logged Items (0)";
     clearBtn.style.display = "none";
 
-    list.innerHTML = `
-      <div class="text-center py-8 text-gray-500">
-        <i class="fa-solid fa-utensils text-4xl mb-3 text-gray-300"></i>
-        <p class="font-medium">No meals logged today</p>
-        <p class="text-sm">Add meals from the Meals page</p>
-      </div>
-    `;
-
     updateProgress(0, 2000, ".bg-emerald-500", "Calories");
     updateProgress(0, 50, ".bg-blue-500", "Protein");
     updateProgress(0, 250, ".bg-amber-500", "Carbs");
@@ -124,8 +126,41 @@ export function renderFoodLog() {
 
     updateWeeklyStats();
     renderWeeklyOverview();
+
+    list.innerHTML = `
+      <div class="text-center py-10 text-gray-500">
+        <i class="fa-solid fa-utensils text-4xl mb-4 text-gray-300"></i>
+
+        <p class="font-medium text-base mb-1">
+          No meals logged today
+        </p>
+
+        <p class="text-sm mb-6">
+          Add meals from the Meals page or scan products
+        </p>
+
+        <div class="flex justify-center gap-4">
+          <button
+            id="go-to-meals"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+          >
+            <i class="fa-solid fa-plus"></i>
+            Browse Recipes
+          </button>
+
+          <button
+            id="go-to-scanner"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+          >
+            <i class="fa-solid fa-barcode"></i>
+            Scan Product
+          </button>
+        </div>
+      </div>
+    `;
     return;
   }
+
 
   title.textContent = `Logged Items (${data.items.length})`;
   clearBtn.style.display = "inline-block";
@@ -143,7 +178,8 @@ export function renderFoodLog() {
           <div>
             <p class="font-bold">${item.name}</p>
             <p class="text-sm text-gray-500">
-              ${item.servings} serving • <span class="text-emerald-600">${item.type}</span>
+              ${item.servings} serving • 
+              <span class="text-emerald-600">${item.type}</span>
             </p>
             <p class="text-xs text-gray-400">${item.time}</p>
           </div>
@@ -161,7 +197,10 @@ export function renderFoodLog() {
             <span class="bg-purple-50 px-2 py-1 rounded">${item.fat}g F</span>
           </div>
 
-          <button onclick="deleteFoodLogItem(${index})" class="text-gray-400 hover:text-red-500">
+          <button
+            onclick="deleteFoodLogItem(${index})"
+            class="text-gray-400 hover:text-red-500"
+          >
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>
@@ -173,19 +212,22 @@ export function renderFoodLog() {
   renderWeeklyOverview();
 }
 
-
 function updateProgress(value, max, barClass, label) {
-  document.querySelectorAll("#foodlog-today-section .rounded-xl").forEach((box) => {
-    const title = box.querySelector("span.font-semibold");
-    if (!title || title.textContent !== label) return;
+  document
+    .querySelectorAll("#foodlog-today-section .rounded-xl")
+    .forEach((box) => {
+      const title = box.querySelector("span.font-semibold");
+      if (!title || title.textContent !== label) return;
 
-    const text = box.querySelector(".text-gray-500");
-    const bar = box.querySelector(barClass);
-    const percent = Math.min((value / max) * 100, 100);
+      const text = box.querySelector(".text-gray-500");
+      const bar = box.querySelector(barClass);
+      const percent = Math.min((value / max) * 100, 100);
 
-    text.textContent = `${value} / ${max} ${label === "Calories" ? "kcal" : "g"}`;
-    bar.style.width = percent + "%";
-  });
+      text.textContent = `${value} / ${max} ${
+        label === "Calories" ? "kcal" : "g"
+      }`;
+      bar.style.width = percent + "%";
+    });
 }
 
 /* =======================WEEKLY DATA======================= */
@@ -197,7 +239,10 @@ function getWeeklyData() {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
 
-    const key = `foodlog_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const key = `foodlog_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(d.getDate()).padStart(2, "0")}`;
     const data = JSON.parse(localStorage.getItem(key));
 
     week.push({
@@ -220,17 +265,29 @@ function renderWeeklyOverview() {
 
   container.innerHTML = `
     <div class="grid grid-cols-7 gap-3 w-full">
-      ${week.map(d => `
-        <div class="text-center p-3 rounded-xl ${d.isToday ? "bg-indigo-100" : ""}">
+      ${week
+        .map(
+          (d) => `
+        <div class="text-center p-3 rounded-xl ${
+          d.isToday ? "bg-indigo-100" : ""
+        }">
           <p class="text-xs text-gray-500">${d.day}</p>
           <p class="font-semibold">${d.date}</p>
-          <p class="mt-2 font-bold ${d.calories ? "text-emerald-600" : "text-gray-300"}">
+          <p class="mt-2 font-bold ${
+            d.calories ? "text-emerald-600" : "text-gray-300"
+          }">
             ${d.calories}
           </p>
           <p class="text-xs text-gray-400">kcal</p>
-          ${d.items ? `<p class="text-xs text-gray-500">${d.items} items</p>` : ""}
+          ${
+            d.items
+              ? `<p class="text-xs text-gray-500">${d.items} items</p>`
+              : ""
+          }
         </div>
-      `).join("")}
+      `
+        )
+        .join("")}
     </div>
   `;
 }
@@ -252,3 +309,20 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTodayDate();
   renderFoodLog();
 });
+// ===== GLOBAL NAVIGATION HELPERS =====
+window.goToMeals = function () {
+  if (typeof hideDetails === "function") hideDetails();
+  if (typeof showMealsPage === "function") showMealsPage();
+};
+
+window.goToScanner = function () {
+  if (typeof hideMealsPage === "function") hideMealsPage();
+  if (typeof hideDetails === "function") hideDetails();
+
+  const scannerSection = document.getElementById("products-section");
+  if (scannerSection) scannerSection.style.display = "block";
+
+  if (typeof initProductScanner === "function") {
+    initProductScanner();
+  }
+};
