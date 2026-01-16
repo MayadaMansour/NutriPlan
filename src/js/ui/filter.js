@@ -5,6 +5,53 @@ const API = "https://nutriplan-api.vercel.app/api";
 let selectedArea = "";
 let selectedCategory = "";
 
+/* ================= CATEGORIES ================= */
+export async function loadCategoriesGrid() {
+  const res = await fetch(`${API}/meals/categories`);
+  const data = await res.json();
+
+  const grid = document.getElementById("categories-grid");
+  grid.innerHTML = "";
+
+  data.results.forEach((item) => {
+    const card = createCategoryCard(item.name, item.thumbnail);
+    grid.appendChild(card);
+  });
+}
+function createCategoryCard(name, img) {
+  const card = document.createElement("div");
+
+  card.className = `
+    category-card
+    border
+    rounded-2xl
+    flex
+    items-center
+    gap-3
+    cursor-pointer
+    transition
+    hover:ring-2
+    ring-emerald-500
+  `;
+
+  card.innerHTML = `
+    ${img ? `<img src="${img}" class="w-10 h-10 object-contain px-2" />` : ""}
+    <span class="font-semibold text-gray-900">${name}</span>
+  `;
+
+  card.onclick = () => {
+    selectedCategory = name;
+    setActive(
+      document.getElementById("categories-grid"),
+      card,
+      "category-card"
+    );
+    applyFilters();
+  };
+
+  return card;
+}
+
 /* ================= AREAS ================= */
 export async function loadAreasFilters() {
   const res = await fetch(`${API}/meals/areas`);
@@ -12,16 +59,13 @@ export async function loadAreasFilters() {
 
   const container = document.getElementById("areas-filters");
   container.innerHTML = "";
-  const allBtn = createAreaBtn("All Cuisines", () => {
+  const allBtn = createAreaBtn("All", () => {
     selectedArea = "";
-    selectedCategory = "";
     fetchMeals();
     setActive(container, allBtn);
   });
-
   container.appendChild(allBtn);
-  setActive(container, allBtn);
-
+  setActive(container, allBtn); 
   data.results.forEach((item) => {
     const areaName = item.name;
 
@@ -34,68 +78,6 @@ export async function loadAreasFilters() {
     container.appendChild(btn);
   });
 }
-
-/* ================= CATEGORIES ================= */
-export async function loadCategoriesGrid() {
-  const res = await fetch(`${API}/meals/categories`);
-  const data = await res.json();
-
-  const grid = document.getElementById("categories-grid");
-  grid.innerHTML = "";
-
-  data.results.forEach((item) => {
-    const categoryName = item.name;
-
-    const card = document.createElement("div");
-    card.className = `
-      category-card
-      border
-      rounded-2xl
-      
-      flex
-      items-center
-      gap-2
-      cursor-pointer
-      transition
-      hover:ring-2
-      ring-emerald-500
-    `;
-
-    card.innerHTML = `
-      <img
-        src="${item.thumbnail}"
-        alt="${categoryName}"
-        class="w-10 h-10 object-contain px-2"
-      />
-      <span class="font-semibold text-gray-900">
-        ${categoryName}
-      </span>
-    `;
-
-    card.onclick = () => {
-      selectedCategory = categoryName;
-      setActive(grid, card, "category-card");
-      applyFilters();
-    };
-
-    grid.appendChild(card);
-  });
-}
-
-function applyFilters() {
-  let params = "";
-
-  if (selectedCategory) {
-    params += `category=${encodeURIComponent(selectedCategory)}`;
-  }
-
-  if (selectedArea) {
-    params += `${params ? "&" : ""}area=${encodeURIComponent(selectedArea)}`;
-  }
-
-  fetchMealsByFilter(params);
-}
-
 function createAreaBtn(text, onClick) {
   const btn = document.createElement("button");
   btn.textContent = text;
@@ -105,6 +87,20 @@ function createAreaBtn(text, onClick) {
   return btn;
 }
 
+/* ================= FILTER ================= */
+function applyFilters() {
+  let params = [];
+
+  if (selectedCategory) {
+    params.push(`category=${encodeURIComponent(selectedCategory)}`);
+  }
+
+  if (selectedArea) {
+    params.push(`area=${encodeURIComponent(selectedArea)}`);
+  }
+
+  fetchMealsByFilter(params.join("&"));
+}
 function setActive(container, activeEl, className = "area-btn") {
   container.querySelectorAll(`.${className}`).forEach((el) => {
     el.classList.remove("bg-emerald-600", "text-white", "ring-2");

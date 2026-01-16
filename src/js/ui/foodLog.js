@@ -1,6 +1,4 @@
-/* =======================
-   HELPERS
-======================= */
+
 function todayKey() {
   const d = new Date();
   const y = d.getFullYear();
@@ -16,9 +14,7 @@ function getEmptyDay() {
   };
 }
 
-/* =======================
-   TODAY DATE
-======================= */
+/* =======================TODAY DATE======================= */
 function renderTodayDate() {
   const el = document.getElementById("foodlog-date");
   if (!el) return;
@@ -31,9 +27,7 @@ function renderTodayDate() {
   });
 }
 
-/* =======================
-   ADD MEAL
-======================= */
+/* =======================ADD MEAL======================= */
 export function addMealToFoodLog(meal) {
   const key = todayKey();
   const data = JSON.parse(localStorage.getItem(key)) || getEmptyDay();
@@ -49,9 +43,7 @@ export function addMealToFoodLog(meal) {
   renderFoodLog();
 }
 
-/* =======================
-   DELETE SINGLE ITEM
-======================= */
+/* ======================= DELETE ======================= */
 window.deleteFoodLogItem = function (index) {
   const key = todayKey();
   const data = JSON.parse(localStorage.getItem(key));
@@ -73,9 +65,6 @@ window.deleteFoodLogItem = function (index) {
   renderFoodLog();
 };
 
-/* =======================
-   CLEAR ALL (FULL RESET)
-======================= */
 export function initClearAll() {
  
   const btn = document.getElementById("clear-foodlog");
@@ -104,9 +93,7 @@ export function initClearAll() {
 }
 
 
-/* =======================
-   RENDER FOOD LOG
-======================= */
+/* ====================== FOOD LOG======================= */
 export function renderFoodLog() {
   const key = todayKey();
   const data = JSON.parse(localStorage.getItem(key));
@@ -186,9 +173,7 @@ export function renderFoodLog() {
   renderWeeklyOverview();
 }
 
-/* =======================
-   PROGRESS BARS
-======================= */
+
 function updateProgress(value, max, barClass, label) {
   document.querySelectorAll("#foodlog-today-section .rounded-xl").forEach((box) => {
     const title = box.querySelector("span.font-semibold");
@@ -203,9 +188,7 @@ function updateProgress(value, max, barClass, label) {
   });
 }
 
-/* =======================
-   WEEKLY DATA
-======================= */
+/* =======================WEEKLY DATA======================= */
 function getWeeklyData() {
   const today = new Date();
   const week = [];
@@ -228,9 +211,7 @@ function getWeeklyData() {
   return week;
 }
 
-/* =======================
-   WEEKLY OVERVIEW
-======================= */
+/* =======================WEEKLY OVERVIEW======================= */
 function renderWeeklyOverview() {
   const container = document.getElementById("weekly-chart");
   if (!container) return;
@@ -254,9 +235,7 @@ function renderWeeklyOverview() {
   `;
 }
 
-/* =======================
-   WEEKLY STATS
-======================= */
+/* =======================WEEKLY STATS======================= */
 function updateWeeklyStats() {
   const week = getWeeklyData();
   const totalCalories = week.reduce((s, d) => s + d.calories, 0);
@@ -269,9 +248,6 @@ function updateWeeklyStats() {
   if (items) items.textContent = `${totalItems} items`;
 }
 
-/* =======================
-   INIT
-======================= */
 document.addEventListener("DOMContentLoaded", () => {
   initClearAll();
   renderTodayDate();

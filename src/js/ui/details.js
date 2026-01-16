@@ -6,25 +6,21 @@ let currentMeal;
 let base;
 let servings = 1;
 
-/* ================= OPEN DETAILS ================= */
 export async function openMealDetails(id) {
   document.getElementById("meal-details").style.display = "block";
 
   const res = await fetch(`${API}/meals/${id}`);
   const data = await res.json();
-
-  // 🔥 السطر المهم
   currentMeal = data.result;
 
   fillDetails(currentMeal);
 }
 
-/* ================= HIDE DETAILS ================= */
 export function hideDetails() {
   document.getElementById("meal-details").style.display = "none";
 }
 
-/* ================= FILL DETAILS ================= */
+/* ================= DETAILS ================= */
 function fillDetails(meal) {
   document.querySelector("#meal-details img").src = meal.thumbnail;
   document.querySelector("#meal-details h1").textContent = meal.name;
@@ -55,7 +51,6 @@ function fillDetails(meal) {
   document.getElementById("log-meal-btn").onclick = openModal;
 }
 
-/* ================= INGREDIENTS ================= */
 function renderIngredients(ingredients) {
   const container = document.querySelector(
     "#meal-details .grid.grid-cols-1.md\\:grid-cols-2"
@@ -76,7 +71,6 @@ function renderIngredients(ingredients) {
   });
 }
 
-/* ================= INSTRUCTIONS ================= */
 function renderInstructions(steps) {
   const container = document.querySelector("#meal-details .space-y-4");
   container.innerHTML = "";
@@ -110,7 +104,6 @@ function renderVideo(url) {
   iframe.src = `https://www.youtube.com/embed/${videoId}`;
 }
 
-/* ================= NUTRITION ================= */
 function renderNutrition() {
   const box = document.querySelector("#nutrition-facts-container");
 
@@ -124,7 +117,7 @@ function renderNutrition() {
   values[2].textContent = `${base.fat}g`;
 }
 
-/* ================= MODAL ================= */
+/* ================= PARAGRAPH ================= */
 function openModal() {
   const modal = document.getElementById("log-meal-modal");
   modal.classList.remove("hidden");
@@ -159,7 +152,7 @@ function updateModal() {
     base.fat * servings + "g";
 }
 
-/* ================= SAVE ================= */
+/* ================= SAVE FOOD LOG ================= */
 function save() {
   addMealToFoodLog({
     name: currentMeal.name,

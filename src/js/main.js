@@ -7,27 +7,23 @@ import { initProductScanner } from "./ui/products.js";
 document.addEventListener("DOMContentLoaded", () => {
   const scannerSection = document.getElementById("products-section");
   const foodLogSection = document.getElementById("foodlog-section");
-
   function hideAll() {
     hideMealsPage();
     hideDetails();
     scannerSection.style.display = "none";
     foodLogSection.style.display = "none";
   }
-
   window.goToFoodLog = () => {
     hideAll();
     foodLogSection.style.display = "block";
     renderFoodLog();
     initClearAll();
   };
-
   function goToScanner() {
     hideAll();
     scannerSection.style.display = "block";
     initProductScanner();
   }
-
   document.querySelectorAll(".nav-link").forEach((link) => {
     link.onclick = (e) => {
       e.preventDefault();
@@ -39,18 +35,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (page === "foodlog") window.goToFoodLog();
     };
   });
-
   document
     .getElementById("back-to-meals-btn")
     ?.addEventListener("click", () => {
       hideDetails();
       showMealsPage();
     });
-
   hideAll();
   showMealsPage();
   initMeals(openMealDetails);
-
   loadAreasFilters();
   loadCategoriesGrid();
 });

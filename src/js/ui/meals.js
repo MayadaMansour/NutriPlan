@@ -1,6 +1,6 @@
 const API = "https://nutriplan-api.vercel.app/api";
 
-/* ================= SECTIONS ================= */
+
 const sections = [
   document.getElementById("search-filters-section"),
   document.getElementById("meal-categories-section"),
@@ -13,7 +13,7 @@ const search = document.getElementById("search-input");
 
 let onOpenDetails;
 
-/* ================= SHOW / HIDE ================= */
+
 export function showMealsPage() {
   sections.forEach((s) => s && (s.style.display = "block"));
 }
@@ -22,12 +22,10 @@ export function hideMealsPage() {
   sections.forEach((s) => s && (s.style.display = "none"));
 }
 
-/* ================= INIT ================= */
 export function initMeals(openDetails) {
   onOpenDetails = openDetails;
   fetchMeals();
 
-  // فتح التفاصيل
   grid.onclick = (e) => {
     const card = e.target.closest(".recipe-card");
     if (!card) return;
@@ -36,7 +34,7 @@ export function initMeals(openDetails) {
     onOpenDetails(card.dataset.mealId);
   };
 
-  // 🔍 SEARCH
+  //! SEARCH
   search.oninput = async (e) => {
     const q = e.target.value.trim();
 
@@ -54,16 +52,16 @@ export function initMeals(openDetails) {
   };
 }
 
-/* ================= FETCH DEFAULT ================= */
+//! FETCH 
 export async function fetchMeals() {
   const res = await fetch(
-    `${API}/meals/filter?category=Seafood&page=1&limit=25`
+    `${API}/meals/search?q=&page=1&limit=25`
   );
   const data = await res.json();
   renderMeals(data.results || []);
 }
 
-/* ================= FETCH FILTER ================= */
+//! FILTER
 export async function fetchMealsByFilter(params) {
   const res = await fetch(
     `${API}/meals/filter?${params}&page=1&limit=25`
@@ -72,7 +70,6 @@ export async function fetchMealsByFilter(params) {
   renderMeals(data.results || []);
 }
 
-/* ================= RENDER ================= */
 export function renderMeals(meals) {
   grid.innerHTML = "";
   count.textContent = `Showing ${meals.length} recipes`;
