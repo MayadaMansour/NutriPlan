@@ -13,13 +13,18 @@ class Product {
     this.name = item.name;
     this.brand = item.brand || "";
     this.image = item.image || "https://via.placeholder.com/300";
-    this.nutri = item.nutritionGrade?.toUpperCase() || "";
-    this.nova = item.novaGroup || "-";
+
+    this.nutri = item.nutritionGrade
+      ? item.nutritionGrade.toUpperCase()
+      : "";
+
+    this.nova = item.novaGroup ?? "-";
 
     this.nutrients = {
+      calories: item.nutrients?.calories ?? 0,
       protein: item.nutrients?.protein ?? 0,
-      carbs: item.nutrients?.carbs ?? 0,
       fat: item.nutrients?.fat ?? 0,
+      carbs: item.nutrients?.carbs ?? 0,
       sugar: item.nutrients?.sugar ?? 0,
     };
   }
@@ -34,21 +39,21 @@ const empty = () => document.getElementById("products-empty");
 const count = () => document.getElementById("products-count");
 
 function showLoading() {
-  loading().classList.remove("hidden");
-  grid().classList.add("hidden");
-  empty().classList.add("hidden");
+  loading()?.classList.remove("hidden");
+  grid()?.classList.add("hidden");
+  empty()?.classList.add("hidden");
 }
 
 function showEmpty() {
-  loading().classList.add("hidden");
-  grid().classList.add("hidden");
-  empty().classList.remove("hidden");
+  loading()?.classList.add("hidden");
+  grid()?.classList.add("hidden");
+  empty()?.classList.remove("hidden");
 }
 
 function showGrid() {
-  loading().classList.add("hidden");
-  empty().classList.add("hidden");
-  grid().classList.remove("hidden");
+  loading()?.classList.add("hidden");
+  empty()?.classList.add("hidden");
+  grid()?.classList.remove("hidden");
 }
 
 /* =====================
@@ -57,16 +62,21 @@ function showGrid() {
 async function searchByName(query) {
   showLoading();
 
-  const res = await fetch(
-    `${API}/products/search?q=${query}&page=1&limit=24`
-  );
-  const data = await res.json();
+  try {
+    const res = await fetch(
+      `${API}/products/search?q=${encodeURIComponent(query)}&page=1&limit=24`
+    );
+    const data = await res.json();
 
-  allProducts = (data.results || []).map(
-    (item) => new Product(item)
-  );
+    allProducts = (data.results || []).map(
+      (item) => new Product(item)
+    );
 
-  applyFilters();
+    applyFilters();
+  } catch (e) {
+    allProducts = [];
+    showEmpty();
+  }
 }
 
 /* =====================
@@ -81,14 +91,15 @@ async function searchByBarcode(code) {
 
     if (!data.result) {
       allProducts = [];
-    } else {
-      allProducts = [new Product(data.result)];
+      showEmpty();
+      return;
     }
 
+    allProducts = [new Product(data.result)];
     renderProducts(allProducts);
   } catch {
     allProducts = [];
-    renderProducts([]);
+    showEmpty();
   }
 }
 
@@ -104,7 +115,6 @@ function applyFilters() {
     );
   }
 
-  // ⚠️ category مؤقتة (client-side)
   if (activeCategory) {
     filtered = filtered.filter((p) =>
       p.name.toLowerCase().includes(activeCategory.toLowerCase())
@@ -177,7 +187,7 @@ function renderProducts(products) {
 }
 
 /* =====================
-   INIT EVENTS
+   INIT
 ===================== */
 export function initProductScanner() {
   document.getElementById("search-product-btn").onclick = () => {
