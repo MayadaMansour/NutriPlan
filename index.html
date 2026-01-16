@@ -758,30 +758,33 @@
       </section>
 
       <!-- ============= PRODUCT SCANNER SECTION ============= -->
-<section id="products-section" class="px-8 py-8 bg-gray-50 min-h-screen">
+<section
+  id="products-section"
+  class="hidden px-8 py-8 bg-gray-50 min-h-screen"
+>
   <div class="max-w-7xl mx-auto">
 
     <!-- ================= SEARCH HEADER ================= -->
     <div
-      class="bg-linear-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 mb-6 text-white"
+      class="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 mb-8 text-white"
     >
-      <h2 class="text-2xl font-bold mb-2">
-        <i class="fa-solid fa-barcode mr-2"></i>
+      <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+        <i class="fa-solid fa-barcode"></i>
         Product Search & Barcode Scanner
       </h2>
 
-      <p class="opacity-90 mb-4">
+      <p class="opacity-90 mb-5">
         Search for packaged food products to view nutrition information
       </p>
 
-      <!-- Search By Name -->
+      <!-- Search by name -->
       <div class="flex gap-3">
         <div class="flex-1 relative">
           <input
-            type="text"
             id="product-search-input"
+            type="text"
             placeholder="Search by product name (e.g., Nutella, Pepsi...)"
-            class="w-full px-5 py-3.5 pr-12 bg-white/90 text-gray-900 rounded-xl focus:outline-none"
+            class="w-full px-5 py-3 pr-12 bg-white text-gray-900 rounded-xl focus:outline-none"
           />
           <i
             class="fa-solid fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -790,26 +793,26 @@
 
         <button
           id="search-product-btn"
-          class="px-6 py-3.5 bg-white text-emerald-700 rounded-xl font-semibold"
+          class="px-6 py-3 bg-white text-emerald-700 rounded-xl font-semibold hover:bg-gray-100"
         >
           Search
         </button>
       </div>
 
-      <div class="flex items-center gap-4 my-4">
+      <div class="flex items-center gap-4 my-5">
         <div class="flex-1 h-px bg-white/30"></div>
         <span class="text-sm opacity-80">or</span>
         <div class="flex-1 h-px bg-white/30"></div>
       </div>
 
-      <!-- Search By Barcode -->
+      <!-- Search by barcode -->
       <div class="flex gap-3">
         <div class="flex-1 relative">
           <input
-            type="text"
             id="barcode-input"
+            type="text"
             placeholder="Enter barcode number"
-            class="w-full px-5 py-3.5 pr-12 bg-white/90 text-gray-900 rounded-xl focus:outline-none"
+            class="w-full px-5 py-3 pr-12 bg-white text-gray-900 rounded-xl focus:outline-none"
           />
           <i
             class="fa-solid fa-barcode absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -818,67 +821,44 @@
 
         <button
           id="lookup-barcode-btn"
-          class="px-6 py-3.5 bg-amber-500 text-white rounded-xl font-semibold"
+          class="px-6 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600"
         >
-          <i class="fa-solid fa-search mr-2"></i>Lookup
+          Lookup
         </button>
       </div>
     </div>
 
-    <!-- ================= NUTRI SCORE FILTER ================= -->
-    <div class="flex items-center gap-4 mb-6">
-      <span class="text-sm font-medium text-gray-700">
+    <!-- ================= NUTRI SCORE ================= -->
+    <div class="flex items-center gap-4 mb-8 flex-wrap">
+      <span class="text-sm font-semibold text-gray-700">
         Filter by Nutri-Score:
       </span>
 
-      <div class="flex gap-2">
-        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-emerald-600 text-white" data-grade="">
-          All
-        </button>
-        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-green-100 text-green-700" data-grade="a">
-          A
-        </button>
-        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-lime-100 text-lime-700" data-grade="b">
-          B
-        </button>
-        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-yellow-100 text-yellow-700" data-grade="c">
-          C
-        </button>
-        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-orange-100 text-orange-700" data-grade="d">
-          D
-        </button>
-        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-red-100 text-red-700" data-grade="e">
-          E
-        </button>
+      <div class="flex gap-2 flex-wrap">
+        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-gray-200" data-grade="">All</button>
+        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-green-100 text-green-700" data-grade="a">A</button>
+        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-lime-100 text-lime-700" data-grade="b">B</button>
+        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-yellow-100 text-yellow-700" data-grade="c">C</button>
+        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-orange-100 text-orange-700" data-grade="d">D</button>
+        <button class="nutri-score-filter px-4 py-2 rounded-lg bg-red-100 text-red-700" data-grade="e">E</button>
       </div>
     </div>
 
     <!-- ================= CATEGORIES ================= -->
-    <div class="mb-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-3">
+    <div class="mb-8">
+      <h3 class="text-lg font-bold text-gray-900 mb-4">
         Browse by Category
       </h3>
 
       <div id="product-categories" class="flex gap-3 overflow-x-auto pb-2">
-        <button class="product-category-btn px-4 py-2 bg-emerald-100 rounded-lg" data-category="Snacks">
-          🍪 Snacks
-        </button>
-
-        <button class="product-category-btn px-4 py-2 bg-blue-100 rounded-lg" data-category="Beverages">
-          🥤 Beverages
-        </button>
-
-        <button class="product-category-btn px-4 py-2 bg-amber-100 rounded-lg" data-category="Breakfast Cereals">
-          🍞 Breakfast
-        </button>
-
-        <button class="product-category-btn px-4 py-2 bg-rose-100 rounded-lg" data-category="Dairy">
-          🧀 Dairy
-        </button>
+        <button class="product-category-btn px-4 py-2 rounded-xl bg-orange-100 font-semibold" data-category="Breakfast Cereals">🍞 Breakfast Cereals</button>
+        <button class="product-category-btn px-4 py-2 rounded-xl bg-blue-100 font-semibold" data-category="Beverages">🥤 Beverages</button>
+        <button class="product-category-btn px-4 py-2 rounded-xl bg-pink-100 font-semibold" data-category="Snacks">🍪 Snacks</button>
+        <button class="product-category-btn px-4 py-2 rounded-xl bg-emerald-100 font-semibold" data-category="Dairy">🧀 Dairy</button>
       </div>
     </div>
 
-    <!-- ================= PRODUCTS GRID ================= -->
+    <!-- ================= RESULTS ================= -->
     <div>
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-xl font-bold text-gray-900">Search Results</h3>
@@ -887,15 +867,40 @@
         </p>
       </div>
 
-      <!-- ⚠️ JS WILL RENDER PRODUCTS HERE -->
-      <div
-        id="products-grid"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-      ></div>
+      <div class="relative min-h-[360px]">
+
+        <!-- LOADING -->
+        <div
+          id="products-loading"
+          class="hidden absolute inset-0 flex flex-col items-center justify-center"
+        >
+          <div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p class="text-gray-500 font-medium">Loading products...</p>
+        </div>
+
+        <!-- EMPTY -->
+        <div
+          id="products-empty"
+          class="absolute inset-0 flex flex-col items-center justify-center text-gray-400"
+        >
+          <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <i class="fa-solid fa-box-open text-3xl"></i>
+          </div>
+          <p class="text-lg font-semibold">No products to display</p>
+          <p class="text-sm">Search for a product or browse by category</p>
+        </div>
+
+        <!-- GRID -->
+        <div
+          id="products-grid"
+          class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+        ></div>
+      </div>
     </div>
 
   </div>
 </section>
+
 
       <!-- ============= FOOD LOG SECTION ============= -->
       <section id="foodlog-section" class="px-8 py-8 bg-gray-50 min-h-screen">
@@ -1096,7 +1101,6 @@
           </div>
         </div>
       </section>
-      
     </div>
 
     <!-- Main JavaScript Entry Point -->

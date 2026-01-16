@@ -2,10 +2,7 @@ import { initMeals, showMealsPage, hideMealsPage } from "./ui/meals.js";
 import { openMealDetails, hideDetails } from "./ui/details.js";
 import { renderFoodLog, initClearAll } from "./ui/foodLog.js";
 import { loadAreasFilters, loadCategoriesGrid } from "./ui/filter.js";
-import {
-  loadProductsByCategory,
-  initProductScanner,
-} from "./ui/products.js";
+import { initProductScanner } from "./ui/products.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const scannerSection = document.getElementById("products-section");
@@ -25,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initClearAll();
   };
 
-  function initScanner() {
+  function goToScanner() {
     hideAll();
     scannerSection.style.display = "block";
     initProductScanner();
@@ -36,20 +33,24 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       hideAll();
 
-      if (link.dataset.page === "meals") showMealsPage();
-      if (link.dataset.page === "scanner") initScanner();
-      if (link.dataset.page === "foodlog") window.goToFoodLog();
+      const page = link.dataset.page;
+      if (page === "meals") showMealsPage();
+      if (page === "scanner") goToScanner();
+      if (page === "foodlog") window.goToFoodLog();
     };
   });
 
-  document.getElementById("back-to-meals-btn").onclick = () => {
-    hideDetails();
-    showMealsPage();
-  };
+  document
+    .getElementById("back-to-meals-btn")
+    ?.addEventListener("click", () => {
+      hideDetails();
+      showMealsPage();
+    });
 
   hideAll();
   showMealsPage();
   initMeals(openMealDetails);
+
   loadAreasFilters();
   loadCategoriesGrid();
 });
