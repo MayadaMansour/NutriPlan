@@ -1,5 +1,4 @@
 
-//! GLOBAL NAVIGATION 
 window.goToMeals = function () {
   if (typeof hideDetails === "function") hideDetails();
   if (typeof showMealsPage === "function") showMealsPage();
@@ -25,28 +24,36 @@ document.addEventListener("click", (e) => {
   }
 });
 
-
 function todayKey() {
   const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `foodlog_${y}-${m}-${day}`;
+  return `foodlog_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-${String(d.getDate()).padStart(2, "0")}`;
 }
-function getEmptyDay() {
+
+function emptyDay() {
   return {
     items: [],
     totals: { calories: 0, protein: 0, carbs: 0, fat: 0 },
   };
 }
 
-//! TODAY DATE
+function getDayData() {
+  return JSON.parse(localStorage.getItem(todayKey())) || emptyDay();
+}
+
+function saveDayData(data) {
+  localStorage.setItem(todayKey(), JSON.stringify(data));
+}
+
+//!  TODAY DATE
+
 function renderTodayDate() {
   const el = document.getElementById("foodlog-date");
   if (!el) return;
 
-  const today = new Date();
-  el.textContent = today.toLocaleDateString("en-US", {
+  el.textContent = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     month: "short",
     day: "numeric",
@@ -54,27 +61,30 @@ function renderTodayDate() {
 }
 
 //! ADD MEAL
+
+
 export function addMealToFoodLog(meal) {
-  const key = todayKey();
-  const data = JSON.parse(localStorage.getItem(key)) || getEmptyDay();
+  const data = getDayData();
 
   data.items.push(meal);
-
   data.totals.calories += meal.calories;
   data.totals.protein += meal.protein;
   data.totals.carbs += meal.carbs;
   data.totals.fat += meal.fat;
 
-  localStorage.setItem(key, JSON.stringify(data));
+  saveDayData(data);
   renderFoodLog();
+
+  if (window.showDoneMessage) {
+    window.showDoneMessage("Added to Food Log");
+  }
 }
 
-//! DELETE 
-window.deleteFoodLogItem = function (index) {
-  const key = todayKey();
-  const data = JSON.parse(localStorage.getItem(key));
-  if (!data) return;
 
+//! DELETE MEAL
+
+window.deleteFoodLogItem = function (index) {
+  const data = getDayData();
   const item = data.items[index];
 
   data.totals.calories -= item.calories;
@@ -85,41 +95,33 @@ window.deleteFoodLogItem = function (index) {
   data.items.splice(index, 1);
 
   data.items.length === 0
-    ? localStorage.removeItem(key)
-    : localStorage.setItem(key, JSON.stringify(data));
+    ? localStorage.removeItem(todayKey())
+    : saveDayData(data);
 
   renderFoodLog();
 };
+
+//! CLEAR ALL
+
 export function initClearAll() {
   const btn = document.getElementById("clear-foodlog");
   if (!btn) return;
-
   btn.onclick = () => {
-    Swal.fire({
-      title: "Clear today's food log?",
-      text: "This will remove all meals logged today",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, clear",
-      cancelButtonText: "Cancel",
-    }).then((res) => {
-      if (!res.isConfirmed) return;
-      localStorage.removeItem(todayKey());
-      updateProgress(0, 2000, ".bg-emerald-500", "Calories");
-      updateProgress(0, 50, ".bg-blue-500", "Protein");
-      updateProgress(0, 250, ".bg-amber-500", "Carbs");
-      updateProgress(0, 65, ".bg-purple-500", "Fat");
-
-      renderFoodLog();
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("foodlog_")) {
+        localStorage.removeItem(key);
+      }
     });
+
+    renderFoodLog();
   };
 }
 
-//! FOOD LOG
-export function renderFoodLog() {
-  const key = todayKey();
-  const data = JSON.parse(localStorage.getItem(key));
 
+//! RENDER FOOD LOG
+
+export function renderFoodLog() {
+  const data = getDayData();
   const list = document.getElementById("logged-items-list");
   const title = document.querySelector("#foodlog-today-section h4");
   const clearBtn = document.getElementById("clear-foodlog");
@@ -127,64 +129,35 @@ export function renderFoodLog() {
   if (!list) return;
   list.innerHTML = "";
 
-  if (!data || data.items.length === 0) {
+  if (!data.items.length) {
     title.textContent = "Logged Items (0)";
     clearBtn.style.display = "none";
 
-    updateProgress(0, 2000, ".bg-emerald-500", "Calories");
-    updateProgress(0, 50, ".bg-blue-500", "Protein");
-    updateProgress(0, 250, ".bg-amber-500", "Carbs");
-    updateProgress(0, 65, ".bg-purple-500", "Fat");
-
-    updateWeeklyStats();
+    resetProgress();
     renderWeeklyOverview();
+    updateWeeklyStats();
 
-    list.innerHTML = `
-      <div class="text-center py-10 text-gray-500">
-        <i class="fa-solid fa-utensils text-4xl mb-4 text-gray-300"></i>
-
-        <p class="font-medium text-base mb-1">
-          No meals logged today
-        </p>
-
-        <p class="text-sm mb-6">
-          Add meals from the Meals page or scan products
-        </p>
-
-        <div class="flex justify-center gap-4">
-          <button
-            id="go-to-meals"
-            class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
-          >
-            <i class="fa-solid fa-plus"></i>
-            Browse Recipes
-          </button>
-
-          <button
-            id="go-to-scanner"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
-          >
-            <i class="fa-solid fa-barcode"></i>
-            Scan Product
-          </button>
-        </div>
-      </div>
-    `;
+    list.innerHTML = emptyStateHTML();
     return;
   }
-
 
   title.textContent = `Logged Items (${data.items.length})`;
   clearBtn.style.display = "inline-block";
 
-  updateProgress(data.totals.calories, 2000, ".bg-emerald-500", "Calories");
-  updateProgress(data.totals.protein, 50, ".bg-blue-500", "Protein");
-  updateProgress(data.totals.carbs, 250, ".bg-amber-500", "Carbs");
-  updateProgress(data.totals.fat, 65, ".bg-purple-500", "Fat");
+  updateAllProgress(data.totals);
 
-  data.items.forEach((item, index) => {
-    list.innerHTML += `
-      <div class="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+  data.items.forEach((item, i) => {
+    list.innerHTML += itemHTML(item, i);
+  });
+
+  renderWeeklyOverview();
+  updateWeeklyStats();
+}
+
+
+function itemHTML(item, index) {
+  return `
+ <div class="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
           <img src="${item.image}" class="w-14 h-14 rounded-lg object-cover" />
           <div>
@@ -217,11 +190,53 @@ export function renderFoodLog() {
           </button>
         </div>
       </div>
-    `;
-  });
+  `;
+}
 
-  updateWeeklyStats();
-  renderWeeklyOverview();
+function emptyStateHTML() {
+  return `
+        <div class="text-center py-10 text-gray-500">
+        <i class="fa-solid fa-utensils text-4xl mb-4 text-gray-300"></i>
+
+        <p class="font-medium text-base mb-1">
+          No meals logged today
+        </p>
+
+        <p class="text-sm mb-6">
+          Add meals from the Meals page or scan products
+        </p>
+
+        <div class="flex justify-center gap-4">
+          <button
+            id="go-to-meals"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+          >
+            <i class="fa-solid fa-plus"></i>
+            Browse Recipes
+          </button>
+
+          <button
+            id="go-to-scanner"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+          >
+            <i class="fa-solid fa-barcode"></i>
+            Scan Product
+          </button>
+        </div>
+      </div>
+  `;
+}
+
+
+function updateAllProgress(t) {
+  updateProgress(t.calories, 2000, ".bg-emerald-500", "Calories");
+  updateProgress(t.protein, 50, ".bg-blue-500", "Protein");
+  updateProgress(t.carbs, 250, ".bg-amber-500", "Carbs");
+  updateProgress(t.fat, 65, ".bg-purple-500", "Fat");
+}
+
+function resetProgress() {
+  updateAllProgress({ calories: 0, protein: 0, carbs: 0, fat: 0 });
 }
 
 function updateProgress(value, max, barClass, label) {
@@ -233,8 +248,8 @@ function updateProgress(value, max, barClass, label) {
 
       const text = box.querySelector(".text-gray-500");
       const bar = box.querySelector(barClass);
-      const percent = Math.min((value / max) * 100, 100);
 
+      const percent = Math.min((value / max) * 100, 100);
       text.textContent = `${value} / ${max} ${
         label === "Calories" ? "kcal" : "g"
       }`;
@@ -242,7 +257,8 @@ function updateProgress(value, max, barClass, label) {
     });
 }
 
-//! WEEKLY DATA
+//! WEEKLY
+
 function getWeeklyData() {
   const today = new Date();
   const week = [];
@@ -255,6 +271,7 @@ function getWeeklyData() {
       2,
       "0"
     )}-${String(d.getDate()).padStart(2, "0")}`;
+
     const data = JSON.parse(localStorage.getItem(key));
 
     week.push({
@@ -265,10 +282,10 @@ function getWeeklyData() {
       isToday: i === 0,
     });
   }
+
   return week;
 }
 
-//! WEEKLY OVERVIEW
 function renderWeeklyOverview() {
   const container = document.getElementById("weekly-chart");
   if (!container) return;
@@ -303,6 +320,7 @@ function renderWeeklyOverview() {
     </div>
   `;
 }
+
 function updateWeeklyStats() {
   const week = getWeeklyData();
   const totalCalories = week.reduce((s, d) => s + d.calories, 0);
@@ -314,10 +332,9 @@ function updateWeeklyStats() {
   if (avg) avg.textContent = `${Math.round(totalCalories / 7)} kcal`;
   if (items) items.textContent = `${totalItems} items`;
 }
+
 document.addEventListener("DOMContentLoaded", () => {
   initClearAll();
   renderTodayDate();
   renderFoodLog();
 });
-
-

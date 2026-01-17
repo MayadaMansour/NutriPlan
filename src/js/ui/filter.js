@@ -2,94 +2,92 @@ import { fetchMeals, fetchMealsByFilter } from "./meals.js";
 
 const API = "https://nutriplan-api.vercel.app/api";
 
-let selectedArea = "";
 let selectedCategory = "";
+let selectedArea = "";
 
-//! CATEGORIES 
+//! CATEGORIES
 export async function loadCategoriesGrid() {
   const res = await fetch(`${API}/meals/categories`);
   const data = await res.json();
 
   const grid = document.getElementById("categories-grid");
   grid.innerHTML = "";
+  grid.classList.add("flex", "flex-wrap", "justify-center", "gap-3");
+  const allCard = document.createElement("div");
+  allCard.className =
+    "category-card border rounded-full px-4 py-2 cursor-pointer text-sm font-medium";
 
-  data.results.forEach((item) => {
-    const card = createCategoryCard(item.name, item.thumbnail);
-    grid.appendChild(card);
-  });
-}
-function createCategoryCard(name, img) {
-  const card = document.createElement("div");
+  allCard.innerHTML = `<span>All</span>`;
 
-  card.className = `
-    category-card
-    border
-    rounded-2xl
-    flex
-    items-center
-    gap-3
-    cursor-pointer
-    transition
-    hover:ring-2
-    ring-emerald-500
-  `;
-
-  card.innerHTML = `
-    ${img ? `<img src="${img}" class="w-10 h-10 object-contain px-2" />` : ""}
-    <span class="font-semibold text-gray-900">${name}</span>
-  `;
-
-  card.onclick = () => {
-    selectedCategory = name;
-    setActive(
-      document.getElementById("categories-grid"),
-      card,
-      "category-card"
-    );
+  allCard.onclick = function () {
+    selectedCategory = "";
+    setActive(grid, allCard, "category-card");
     applyFilters();
   };
 
-  return card;
-}
+  grid.appendChild(allCard);
+  setActive(grid, allCard, "category-card");
+  data.results.forEach((item) => {
+    const card = document.createElement("div");
+    card.className =
+      "category-card border rounded-full px-4 py-2 cursor-pointer text-sm font-medium flex items-center gap-2";
 
-//! AREAS 
+    card.innerHTML = `
+      ${item.thumbnail ? `<img src="${item.thumbnail}" class="w-6 h-6" />` : ""}
+      <span>${item.name}</span>
+    `;
+
+    card.onclick = function () {
+      selectedCategory = item.name;
+      setActive(grid, card, "category-card");
+      applyFilters();
+    };
+
+    grid.appendChild(card);
+  });
+}
+//! AREAS
 export async function loadAreasFilters() {
   const res = await fetch(`${API}/meals/areas`);
   const data = await res.json();
 
   const container = document.getElementById("areas-filters");
   container.innerHTML = "";
-  const allBtn = createAreaBtn("All", () => {
-    selectedArea = "";
-    fetchMeals();
-    setActive(container, allBtn);
-  });
-  container.appendChild(allBtn);
-  setActive(container, allBtn); 
-  data.results.forEach((item) => {
-    const areaName = item.name;
 
-    const btn = createAreaBtn(areaName, () => {
-      selectedArea = areaName;
+  const allBtn = createAreaButton("All");
+  allBtn.onclick = function () {
+    selectedArea = "";
+    setActive(container, allBtn);
+    applyFilters();
+  };
+
+  container.appendChild(allBtn);
+  setActive(container, allBtn);
+
+  data.results.forEach((item) => {
+    const btn = createAreaButton(item.name);
+
+    btn.onclick = function () {
+      selectedArea = item.name;
       setActive(container, btn);
       applyFilters();
-    });
+    };
 
     container.appendChild(btn);
   });
 }
-function createAreaBtn(text, onClick) {
+
+function createAreaButton(text) {
   const btn = document.createElement("button");
   btn.textContent = text;
   btn.className =
-    "area-btn px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium hover:bg-emerald-600 hover:text-white transition";
-  btn.onclick = onClick;
+    "area-btn px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium";
   return btn;
 }
 
-//! FILTER
+//! FILTERS
 function applyFilters() {
-  let params = [];
+  const params = [];
 
   if (selectedCategory) {
     params.push(`category=${encodeURIComponent(selectedCategory)}`);
@@ -99,8 +97,14 @@ function applyFilters() {
     params.push(`area=${encodeURIComponent(selectedArea)}`);
   }
 
-  fetchMealsByFilter(params.join("&"));
+  if (params.length === 0) {
+    fetchMeals();
+  } else {
+    fetchMealsByFilter(params.join("&"));
+  }
 }
+
+
 function setActive(container, activeEl, className = "area-btn") {
   container.querySelectorAll(`.${className}`).forEach((el) => {
     el.classList.remove("bg-emerald-600", "text-white", "ring-2");

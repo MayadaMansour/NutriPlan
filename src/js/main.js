@@ -15,18 +15,18 @@ document.addEventListener("DOMContentLoaded", () => {
     foodLogSection.style.display = "none";
   }
 
-  window.goToMeals = () => {
+  window.goToMeals = function () {
     hideAll();
     showMealsPage();
   };
 
-  window.goToScanner = () => {
+  window.goToScanner = function () {
     hideAll();
     scannerSection.style.display = "block";
     initProductScanner();
   };
 
-  window.goToFoodLog = () => {
+  window.goToFoodLog = function () {
     hideAll();
     foodLogSection.style.display = "block";
     renderFoodLog();
@@ -34,11 +34,20 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   document.querySelectorAll(".nav-link").forEach((link) => {
-    link.onclick = (e) => {
+    link.onclick = function (e) {
       e.preventDefault();
-      if (link.dataset.page === "meals") goToMeals();
-      if (link.dataset.page === "scanner") goToScanner();
-      if (link.dataset.page === "foodlog") goToFoodLog();
+
+      if (link.dataset.page === "meals") {
+        goToMeals();
+      }
+
+      if (link.dataset.page === "scanner") {
+        goToScanner();
+      }
+
+      if (link.dataset.page === "foodlog") {
+        goToFoodLog();
+      }
     };
   });
 
@@ -48,3 +57,4 @@ document.addEventListener("DOMContentLoaded", () => {
   loadAreasFilters();
   loadCategoriesGrid();
 });
+
