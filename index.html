@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -626,7 +626,14 @@
                     src="https://www.youtube.com/embed/4aZr5hZXP_s"
                     class="absolute inset-0 w-full h-full"
                     frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="
+                      accelerometer;
+                      autoplay;
+                      clipboard-write;
+                      encrypted-media;
+                      gyroscope;
+                      picture-in-picture;
+                    "
                     allowfullscreen
                   >
                   </iframe>
@@ -644,110 +651,119 @@
                   <i class="fa-solid fa-chart-pie text-emerald-600"></i>
                   Nutrition Facts
                 </h2>
+
                 <div id="nutrition-facts-container">
                   <p class="text-sm text-gray-500 mb-4">Per serving</p>
 
+                  <!-- Calories -->
                   <div
                     class="text-center py-4 mb-4 bg-linear-to-br from-emerald-50 to-teal-50 rounded-xl"
                   >
                     <p class="text-sm text-gray-600">Calories per serving</p>
-                    <p class="text-4xl font-bold text-emerald-600">485</p>
-                    <p class="text-xs text-gray-500 mt-1">Total: 1940 cal</p>
+                    <p
+                      id="nf-calories"
+                      class="text-4xl font-bold text-emerald-600"
+                    >
+                      0
+                    </p>
+                    <p
+                      id="nf-total-calories"
+                      class="text-xs text-gray-500 mt-1"
+                    >
+                      Total: 0 cal
+                    </p>
                   </div>
 
+                  <!-- MACROS -->
                   <div class="space-y-4">
+                    <!-- Protein -->
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
                         <span class="text-gray-700">Protein</span>
                       </div>
-                      <span class="font-bold text-gray-900">42g</span>
+                      <span id="nf-protein" class="font-bold text-gray-900"
+                        >0g</span
+                      >
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
+                        id="nf-protein-bar"
                         class="bg-emerald-500 h-2 rounded-full"
-                        style="width: 84%"
+                        style="width: 0%"
                       ></div>
                     </div>
 
+                    <!-- Carbs -->
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-blue-500"></div>
                         <span class="text-gray-700">Carbs</span>
                       </div>
-                      <span class="font-bold text-gray-900">52g</span>
+                      <span id="nf-carbs" class="font-bold text-gray-900"
+                        >0g</span
+                      >
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
+                        id="nf-carbs-bar"
                         class="bg-blue-500 h-2 rounded-full"
-                        style="width: 17%"
+                        style="width: 0%"
                       ></div>
                     </div>
 
+                    <!-- Fat -->
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-purple-500"></div>
                         <span class="text-gray-700">Fat</span>
                       </div>
-                      <span class="font-bold text-gray-900">8g</span>
+                      <span id="nf-fat" class="font-bold text-gray-900"
+                        >0g</span
+                      >
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
+                        id="nf-fat-bar"
                         class="bg-purple-500 h-2 rounded-full"
-                        style="width: 12%"
+                        style="width: 0%"
                       ></div>
                     </div>
 
+                    <!-- Fiber -->
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-orange-500"></div>
                         <span class="text-gray-700">Fiber</span>
                       </div>
-                      <span class="font-bold text-gray-900">4g</span>
+                      <span id="nf-fiber" class="font-bold text-gray-900"
+                        >0g</span
+                      >
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
+                        id="nf-fiber-bar"
                         class="bg-orange-500 h-2 rounded-full"
-                        style="width: 14%"
+                        style="width: 0%"
                       ></div>
                     </div>
 
+                    <!-- Sugar -->
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-pink-500"></div>
                         <span class="text-gray-700">Sugar</span>
                       </div>
-                      <span class="font-bold text-gray-900">12g</span>
+                      <span id="nf-sugar" class="font-bold text-gray-900"
+                        >0g</span
+                      >
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
+                        id="nf-sugar-bar"
                         class="bg-pink-500 h-2 rounded-full"
-                        style="width: 24%"
+                        style="width: 0%"
                       ></div>
-                    </div>
-                  </div>
-
-                  <div class="mt-6 pt-6 border-t border-gray-100">
-                    <h3 class="text-sm font-semibold text-gray-900 mb-3">
-                      Vitamins & Minerals (% Daily Value)
-                    </h3>
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                      <div class="flex justify-between">
-                        <span class="text-gray-600">Vitamin A</span>
-                        <span class="font-medium">15%</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-gray-600">Vitamin C</span>
-                        <span class="font-medium">25%</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-gray-600">Calcium</span>
-                        <span class="font-medium">4%</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-gray-600">Iron</span>
-                        <span class="font-medium">12%</span>
-                      </div>
                     </div>
                   </div>
                 </div>

@@ -1,74 +1,111 @@
 import { addMealToFoodLog } from "./foodLog.js";
 
 const API = "https://nutriplan-api.vercel.app/api";
+const USDA_API_KEY = "xRGnhxcXrKuX8hJpeeQE5Rac9b7dyQDpaMs5fWFL";
 
 let meal = null;
 let nutrition = null;
 let servings = 1;
 
-//! CLOSE DETAILS
-
 export async function openMealDetails(id) {
-  document.getElementById("meal-details").style.display = "block";
+  showDetails();
 
   const res = await fetch(`${API}/meals/${id}`);
   const data = await res.json();
 
   meal = data.result;
-  renderMealDetails();
+  await renderMealDetails();
 }
 
 export function hideDetails() {
   document.getElementById("meal-details").style.display = "none";
 }
 
-//! RENDER MEAL
+function showDetails() {
+  document.getElementById("meal-details").style.display = "block";
+}
 
-function renderMealDetails() {
-  document.querySelector("#meal-details img").src = meal.thumbnail;
-  document.querySelector("#meal-details h1").textContent = meal.name;
-
-  document.querySelector(".bg-emerald-500").textContent =
-    meal.category || "Meal";
-  document.querySelector(".bg-blue-500").textContent = meal.area || "Global";
-
-  const calories = Math.floor(Math.random() * 200) + 350;
-  nutrition = {
-    calories,
-    protein: Math.floor(calories / 10),
-    carbs: Math.floor(calories / 6),
-    fat: Math.floor(calories / 20),
-  };
-
-  document.getElementById("hero-calories").textContent =
-    calories + " cal / serving";
+async function renderMealDetails() {
+  renderHeader();
+  await loadNutrition();
+  renderNutritionFacts();
 
   renderIngredients();
   renderInstructions();
   renderVideo();
 
-  document.getElementById("log-meal-btn").onclick = openModal;
+  setupButtons();
+}
 
-  const backBtn = document.getElementById("meal-back-btn");
-  if (backBtn) {
-    backBtn.onclick = function () {
-      hideDetails();
-      window.goToMeals();
-    };
-  }
+function renderHeader() {
+  document.querySelector("#meal-details img").src = meal.thumbnail;
+  document.querySelector("#meal-details h1").textContent = meal.name;
+
+  document.querySelector(".bg-emerald-500").textContent =
+    meal.category || "Meal";
+
+  document.querySelector(".bg-blue-500").textContent = meal.area || "Global";
+}
+
+//! NUTRITION
+async function loadNutrition() {
+  const res = await fetch(`${API}/nutrition/analyze`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": USDA_API_KEY,
+    },
+    body: JSON.stringify({
+      recipeName: meal.name,
+      ingredients: (meal.ingredients || []).map(
+        (i) => `${i.measure} ${i.ingredient}`,
+      ),
+    }),
+  });
+
+  const json = await res.json();
+  const per = json.data.perServing;
+
+  nutrition = {
+    calories: per.calories || 0,
+    protein: per.protein || 0,
+    carbs: per.carbs || 0,
+    fat: per.fat || 0,
+    fiber: per.fiber || 0,
+    sugar: per.sugar || 0,
+  };
+
+  document.getElementById("hero-calories").textContent =
+    nutrition.calories + " cal / serving";
+}
+
+function renderNutritionFacts() {
+  setText("nf-calories", nutrition.calories);
+  setText("nf-total-calories", `Total: ${nutrition.calories * servings} cal`);
+  setText("nf-protein", nutrition.protein + "g");
+  setText("nf-carbs", nutrition.carbs + "g");
+  setText("nf-fat", nutrition.fat + "g");
+  setText("nf-fiber", nutrition.fiber + "g");
+  setText("nf-sugar", nutrition.sugar + "g");
+
+  setBar("nf-protein-bar", nutrition.protein);
+  setBar("nf-carbs-bar", nutrition.carbs);
+  setBar("nf-fat-bar", nutrition.fat);
+  setBar("nf-fiber-bar", nutrition.fiber);
+  setBar("nf-sugar-bar", nutrition.sugar);
 }
 
 function renderIngredients() {
   const box = document.querySelector(
-    "#meal-details .grid.grid-cols-1.md\\:grid-cols-2"
+    "#meal-details .grid.grid-cols-1.md\\:grid-cols-2",
   );
 
   box.innerHTML = "";
 
   (meal.ingredients || []).forEach((item) => {
     box.innerHTML += `
-      <div class="flex gap-2 p-2 bg-gray-50 rounded">
-        <input type="checkbox">
+      <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+        <input type="checkbox" class="w-5 h-5 text-emerald-600">
         <span>${item.measure} ${item.ingredient}</span>
       </div>
     `;
@@ -81,8 +118,8 @@ function renderInstructions() {
 
   (meal.instructions || []).forEach((step, i) => {
     box.innerHTML += `
-      <div class="flex gap-3">
-        <div class="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center">
+      <div class="flex gap-4 p-4 rounded-xl hover:bg-gray-50">
+        <div class="w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold">
           ${i + 1}
         </div>
         <p>${step}</p>
@@ -91,25 +128,43 @@ function renderInstructions() {
   });
 }
 
+//! VIDEO
+
 function renderVideo() {
-  const iframe = document.querySelector("#meal-details iframe");
+  const wrapper = document.querySelector(
+    "#meal-details .relative.aspect-video",
+  );
 
   if (!meal.youtube) {
-    iframe.parentElement.innerHTML =
-      "<div class='text-gray-400 text-center'>No video available</div>";
+    wrapper.innerHTML =
+      "<div class='flex items-center justify-center h-full text-gray-400'>No video available</div>";
     return;
   }
 
-  let videoId = "";
+  const videoId = meal.youtube.includes("v=")
+    ? meal.youtube.split("v=")[1].split("&")[0]
+    : meal.youtube.split("youtu.be/")[1];
 
-  if (meal.youtube.includes("v=")) {
-    videoId = meal.youtube.split("v=")[1].split("&")[0];
-  } else if (meal.youtube.includes("youtu.be")) {
-    videoId = meal.youtube.split("youtu.be/")[1];
-  }
-
-  iframe.src = `https://www.youtube.com/embed/${videoId}`;
+  wrapper.innerHTML = `
+    <iframe
+      src="https://www.youtube.com/embed/${videoId}"
+      class="absolute inset-0 w-full h-full rounded-xl"
+      allowfullscreen
+    ></iframe>
+  `;
 }
+
+function setupButtons() {
+  document.getElementById("log-meal-btn").onclick = openModal;
+
+  document.getElementById("meal-back-btn").onclick = () => {
+    hideDetails();
+    window.goToMeals();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+}
+
+//! PARAGRAPH
 
 function openModal() {
   const modal = document.getElementById("log-meal-modal");
@@ -128,21 +183,17 @@ function openModal() {
   document.getElementById("confirm-log").onclick = saveMeal;
 }
 
-function changeServing(num) {
-  servings = Math.max(1, servings + num);
+function changeServing(value) {
+  servings = Math.max(1, servings + value);
   updateModal();
 }
 
 function updateModal() {
-  document.getElementById("servings-count").textContent = servings;
-  document.getElementById("modal-calories").textContent =
-    nutrition.calories * servings;
-  document.getElementById("modal-protein").textContent =
-    nutrition.protein * servings + "g";
-  document.getElementById("modal-carbs").textContent =
-    nutrition.carbs * servings + "g";
-  document.getElementById("modal-fat").textContent =
-    nutrition.fat * servings + "g";
+  setText("servings-count", servings);
+  setText("modal-calories", nutrition.calories * servings);
+  setText("modal-protein", nutrition.protein * servings + "g");
+  setText("modal-carbs", nutrition.carbs * servings + "g");
+  setText("modal-fat", nutrition.fat * servings + "g");
 }
 
 function closeModal() {
@@ -150,6 +201,7 @@ function closeModal() {
 }
 
 //! SAVE
+
 function saveMeal() {
   addMealToFoodLog({
     name: meal.name,
@@ -167,4 +219,14 @@ function saveMeal() {
   });
 
   closeModal();
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function setBar(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.style.width = Math.min(value * 2, 100) + "%";
 }

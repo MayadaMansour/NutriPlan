@@ -6,6 +6,8 @@ let allProducts = [];
 let activeNutri = "";
 let activeCategory = "";
 let selectedProduct = null;
+
+
 const modal = document.getElementById("log-meal-modal");
 const modalImg = document.getElementById("modal-meal-image");
 const modalName = document.getElementById("modal-meal-name");
@@ -20,6 +22,7 @@ const grid = document.getElementById("products-grid");
 const loading = document.getElementById("products-loading");
 const empty = document.getElementById("products-empty");
 const count = document.getElementById("products-count");
+
 
 function showLoading() {
   loading.classList.remove("hidden");
@@ -37,43 +40,6 @@ function showGrid() {
   loading.classList.add("hidden");
   empty.classList.add("hidden");
   grid.classList.remove("hidden");
-}
-
-//! SEARCH BY NAME
-async function searchByName(query) {
-  showLoading();
-
-  try {
-    const res = await fetch(`${API}/products/search?q=${query}&page=1&limit=24`);
-    const data = await res.json();
-
-    allProducts = (data.results || []).map(formatProduct);
-    applyFilters();
-  } catch {
-    showEmpty();
-  }
-}
-
-/* ======================
-   SEARCH BY BARCODE
-====================== */
-async function searchByBarcode(code) {
-  showLoading();
-
-  try {
-    const res = await fetch(`${API}/products/barcode/${code}`);
-    const data = await res.json();
-
-    if (!data.result) {
-      showEmpty();
-      return;
-    }
-
-    allProducts = [formatProduct(data.result)];
-    renderProducts(allProducts);
-  } catch {
-    showEmpty();
-  }
 }
 
 //! PRODUCT
@@ -95,6 +61,49 @@ function formatProduct(item) {
   };
 }
 
+//! SEARCH BY NAME
+
+async function searchByName(query) {
+  showLoading();
+  try {
+    const res = await fetch(`${API}/products/search?q=${query}&page=1&limit=24`);
+    const data = await res.json();
+    allProducts = (data.results || []).map(formatProduct);
+    applyFilters();
+  } catch {
+    showEmpty();
+  }
+}
+
+//! SEARCH BY BARCODE
+async function searchByBarcode(code) {
+  showLoading();
+  try {
+    const res = await fetch(`${API}/products/barcode/${code}`);
+    const data = await res.json();
+    if (!data.result) return showEmpty();
+    allProducts = [formatProduct(data.result)];
+    renderProducts(allProducts);
+  } catch {
+    showEmpty();
+  }
+}
+
+//! CATEGORY FILTER 
+async function fetchByCategory(category) {
+  showLoading();
+  try {
+    const res = await fetch(
+      `${API}/products/category/${category}?page=1&limit=24`
+    );
+    const data = await res.json();
+    allProducts = (data.results || []).map(formatProduct);
+    applyFilters();
+  } catch {
+    showEmpty();
+  }
+}
+
 //! FILTERS
 
 function applyFilters() {
@@ -104,19 +113,11 @@ function applyFilters() {
     result = result.filter(p => p.nutri === activeNutri);
   }
 
-  if (activeCategory) {
-    const text = activeCategory.toLowerCase();
-    result = result.filter(
-      p =>
-        p.name.toLowerCase().includes(text) ||
-        p.brand.toLowerCase().includes(text)
-    );
-  }
-
   renderProducts(result);
 }
 
 //! PARAGRAPH
+
 function openProductModal(product) {
   selectedProduct = product;
 
@@ -139,7 +140,6 @@ function closeProductModal() {
 
 cancelBtn.onclick = closeProductModal;
 
-
 confirmBtn.onclick = function () {
   if (!selectedProduct) return;
 
@@ -161,54 +161,97 @@ confirmBtn.onclick = function () {
   closeProductModal();
 };
 
-
-
 //! RENDER PRODUCTS
 
 function renderProducts(products) {
   grid.innerHTML = "";
   count.textContent = `Showing ${products.length} products`;
 
-  if (!products.length) {
-    showEmpty();
-    return;
-  }
-
+  if (!products.length) return showEmpty();
   showGrid();
 
   products.forEach(product => {
     const card = document.createElement("div");
     card.className =
-      "bg-white rounded-xl shadow-sm hover:shadow-lg cursor-pointer";
+      "bg-white rounded-2xl shadow-sm hover:shadow-lg cursor-pointer overflow-hidden";
 
     card.onclick = () => openProductModal(product);
 
+    const nutriLabel = product.nutri
+      ? `NUTRI-SCORE ${product.nutri}`
+      : "NUTRI-SCORE UNKNOWN";
+
     card.innerHTML = `
+      <!-- IMAGE -->
       <div class="relative h-44 bg-gray-100 flex items-center justify-center">
         <img src="${product.image}" class="h-full object-contain"/>
 
-        ${
-          product.nutri
-            ? `<span class="absolute top-2 left-2 px-2 py-1 text-xs bg-green-500 text-white rounded">
-                NUTRI ${product.nutri}
-              </span>`
-            : ""
-        }
+        <!-- Nutri Score -->
+        <span class="absolute top-2 left-2 px-3 py-1 text-xs font-bold rounded-full
+          ${
+            product.nutri === "A"
+              ? "bg-green-500 text-white"
+              : product.nutri === "B"
+              ? "bg-lime-500 text-white"
+              : product.nutri === "C"
+              ? "bg-yellow-500 text-white"
+              : product.nutri === "D"
+              ? "bg-orange-500 text-white"
+              : product.nutri === "E"
+              ? "bg-red-500 text-white"
+              : "bg-gray-400 text-white"
+          }">
+          ${nutriLabel}
+        </span>
 
-        <span class="absolute top-2 right-2 w-6 h-6 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center">
+        <!-- NOVA -->
+        <span class="absolute top-2 right-2 w-7 h-7 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
           ${product.nova}
         </span>
       </div>
 
+      <!-- CONTENT -->
       <div class="p-4">
-        <p class="text-xs text-emerald-600">${product.brand}</p>
-        <h3 class="font-bold mb-3">${product.name}</h3>
+        <p class="text-sm text-emerald-600 font-semibold">
+          ${product.brand || ""}
+        </p>
 
-        <div class="grid grid-cols-4 gap-1 text-xs text-center">
-          <div><b>${product.nutrients.protein}g</b><div>Protein</div></div>
-          <div><b>${product.nutrients.carbs}g</b><div>Carbs</div></div>
-          <div><b>${product.nutrients.fat}g</b><div>Fat</div></div>
-          <div><b>${product.nutrients.sugar}g</b><div>Sugar</div></div>
+        <h3 class="font-bold text-gray-900 mb-2 line-clamp-1">
+          ${product.name}
+        </h3>
+
+        <div class="flex items-center gap-4 text-xs text-gray-500 mb-3">
+          <span>
+            <i class="fa-solid fa-scale-balanced mr-1"></i>
+            100 g
+          </span>
+          <span>
+            <i class="fa-solid fa-fire mr-1"></i>
+            ${product.nutrients.calories} kcal/100g
+          </span>
+        </div>
+
+        <!-- NUTRIENTS -->
+        <div class="grid grid-cols-4 gap-2 text-xs text-center font-semibold">
+          <div class="bg-emerald-50 rounded-lg py-2">
+            <div class="text-emerald-600">${product.nutrients.protein}g</div>
+            <div class="text-gray-500">Protein</div>
+          </div>
+
+          <div class="bg-blue-50 rounded-lg py-2">
+            <div class="text-blue-600">${product.nutrients.carbs}g</div>
+            <div class="text-gray-500">Carbs</div>
+          </div>
+
+          <div class="bg-purple-50 rounded-lg py-2">
+            <div class="text-purple-600">${product.nutrients.fat}g</div>
+            <div class="text-gray-500">Fat</div>
+          </div>
+
+          <div class="bg-orange-50 rounded-lg py-2">
+            <div class="text-orange-600">${product.nutrients.sugar}g</div>
+            <div class="text-gray-500">Sugar</div>
+          </div>
         </div>
       </div>
     `;
@@ -240,8 +283,8 @@ export function initProductScanner() {
 
   document.querySelectorAll(".product-category-btn").forEach(btn => {
     btn.onclick = () => {
-      activeCategory = btn.dataset.category || "";
-      applyFilters();
+      activeCategory = btn.dataset.category;
+      fetchByCategory(activeCategory);
     };
   });
 }

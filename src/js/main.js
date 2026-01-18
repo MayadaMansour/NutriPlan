@@ -20,11 +20,18 @@ document.addEventListener("DOMContentLoaded", () => {
     showMealsPage();
   };
 
-  window.goToScanner = function () {
-    hideAll();
-    scannerSection.style.display = "block";
+let scannerInitialized = false;
+
+window.goToScanner = function () {
+  hideAll();
+  scannerSection.style.display = "block";
+
+  if (!scannerInitialized) {
     initProductScanner();
-  };
+    scannerInitialized = true;
+  }
+};
+
 
   window.goToFoodLog = function () {
     hideAll();
